@@ -1,0 +1,23 @@
+p {
+    margin: 20px 0px 10px 0px;
+    font-weight: bolder;
+    font-size: 17px;
+}
+
+input[type='text'] {
+    width: 50%;
+    height: 35px;
+    padding-left: 10px;
+    box-sizing: border-box;
+    border-radius: 5px;
+    border: 3px solid #0097f5;
+}
+
+select {
+    width: 50%;
+    height: 35px;
+    padding-left: 10px;
+    box-sizing: border-box;
+    border-radius: 5px;
+    border: 3px solid #0097f5;
+}

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="thymeleaf/common/fragment::head">
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<link th:href="@{/css/article_manager.css}" rel="stylesheet" type="text/css" media="all"/>
+<nav th:replace="thymeleaf/common/fragment::top"></nav>
+<nav th:replace="thymeleaf/common/fragment::left"></nav>
+<div class="div-inner" id="div-inner">
+    <div class="div-inner-color">
+        <p>公告标题:</p>
+        <input type="text" th:value="${data?.title}" th:name="title" placeholder="输入标题..." class="title">
+        <p>公告内容:</p>
+        <div class="content">
+            <textarea th:name="content" id="LAY_edit" class="layui-textarea"></textarea>
+        </div>
+        <div class="foot-p">
+            <div class="foot-c"><p>公告发布者:</p>
+                <p th:text="${author}" th:name="author"></p>
+            </div>
+            <div class="foot-c"><p>发布时间:</p>
+                <p th:text="${#dates.format(data?.createTime,'yyyy-MM-dd hh:mm:ss')}"></p>
+            </div>
+        </div>
+        <div style="margin-top: 50px;">
+            <input type="button" th:value="确定" id="btn_y" class="layui-btn layui-btn-normal "
+                   style="width: 45%;border-radius: 19px">
+            <input type="button" th:value="取消" id="btn_n" class="layui-btn layui-btn-warm "
+                   style="width: 45%;border-radius: 19px">
+        </div>
+    </div>
+</div>
+<script th:inline="javascript">
+    var pageNum = location.search.split("=")[2];
+    var id = [[${data?.noticeId}]];
+    var authorId = [[${data?.authorId}]];
+    $("#LAY_edit").html([[${data?.content}]]);
+
+    layui.use('layedit', function () {
+        var layedit = layui.layedit
+            , $ = layui.jquery;
+        layedit.set({
+            uploadImage: {
+                url: '/upload/image'
+                , type: 'POST'
+                ,
+            }
+        })
+
+        var index = layedit.build('LAY_edit');
+
+    })
+    $("#btn_y").click(function () {
+
+        var title = $("input[name='title']").val();
+        var content = $(window.frames["LAY_layedit_1"].document).find('body').text();
+        var pat2 = new RegExp("^[0-9]+$")
+        if (getLength(title) == 0 || getLength(title) > 50) {
+            layer.msg("标题长度在1-50个字符之间,中文算两个字符");
+        }
+
+        else if (getLength(content) == 0 || getLength(content) > 1000) {
+            layer.msg("文章内容长度在1000个字符之内,中文算两个字符");
+        }
+
+        else {
+            $.ajax({
+                url: "/notice/mod",
+                type: "post",
+                async: false,
+                cache: false,
+                data: {
+                    'noticeId': id,
+                    'title': title,
+                    'content': $(window.frames["LAY_layedit_1"].document).find('body').html(),
+                    'authorId': authorId,
+                },
+                success: function (data) {
+                    window.location.href = "/notice/index?pageNum=" + pageNum;
+                }
+
+            })
+        }
+
+    })
+    $("#btn_n").click(function () {
+        window.location.href = "/notice/index?pageNum=" + pageNum;
+    })
+
+    function getLength(str) {
+        var len = 0;
+        for (var i = 0; i < str.length; i++) {
+            if (str.charCodeAt(i) > 127 || str.charCodeAt(i) == 94) {
+                len += 2;
+            } else {
+                len++;
+            }
+        }
+        return len;
+    }
+
+    $("input[name='admires']").keyup(function () {
+        var c = $(this);
+        if (/[^\d]/.test(c.val())) {//替换非数字字符
+            var temp_amount = c.val().replace(/[^\d]/g, '');
+            $(this).val(temp_amount);
+        }
+    })
+    $("input[name='comments']").keyup(function () {
+        var c = $(this);
+        if (/[^\d]/.test(c.val())) {//替换非数字字符
+            var temp_amount = c.val().replace(/[^\d]/g, '');
+            $(this).val(temp_amount);
+        }
+    })
+    a_change('l5', 'i5', 'a5');// 菜单目录样式变化
+</script>
+</body>
+</html>

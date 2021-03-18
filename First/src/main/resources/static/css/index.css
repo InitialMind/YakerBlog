@@ -1,0 +1,160 @@
+body {
+    width: 100%;
+    height: 100%;
+    background-color: #1f2837;
+}
+
+.div-parent {
+    width: 100%;
+    height: 100%;
+    background-color: #1f2837;
+    z-index: -1;
+    position: relative;
+}
+
+.nav-left {
+    width: 250px;
+    height: auto;
+    margin-top: 120px;
+    color: whitesmoke;
+    position: fixed;
+    z-index: 2;
+    overflow: hidden;
+    transition: 0.5s;
+    margin-left: 0px;
+    padding: 0px;
+
+}
+
+.nav-top {
+    width: 100%;
+    height: 80px;
+    background-color: white;
+    z-index: 2;
+    position: fixed;
+    box-shadow: 0px 0px 3px 0px #1b1e21;
+
+}
+
+.div-inner {
+    position: absolute;
+    width: 100%;
+    box-sizing: border-box;
+    padding-left: 250px;
+    height: auto;
+    padding-top: 80px;
+
+    min-height: 900px;
+    transition: 0.5s;
+    margin-bottom: 20px;
+    z-index: 0;
+
+}
+
+.div-inner-color {
+
+    width: 100%;
+    height: 100%;
+    min-height: 900px;
+    background-color: whitesmoke;
+    padding: 30px;
+    box-sizing: border-box;
+
+}
+
+.div-inner-color-div {
+    width: 100%;
+    height: auto;
+
+}
+
+.footer {
+    width: 100%;
+    height: auto;
+    padding-right: 50px;
+}
+
+.nav-top-div {
+    width: 330px;
+    height: 80px;
+    display: inline-block;
+}
+
+.nav-top-div-bt {
+    border: none;
+    outline: none;
+    background-color: #f56b05;
+    width: 250px;
+    height: 100%;
+    color: #fff;
+    pointer-events: auto;
+    font-size: 200%;
+    display: inline;
+    cursor: pointer;
+}
+
+.nav-left-ul {
+    width: 250px;
+    height: 100%;
+    line-height: 47px;
+    margin: 0px;
+    padding: 0px;
+    letter-spacing: -8px;
+    padding: 20px 0px 0px 0px;
+
+}
+
+.nav-left-ul-li {
+
+    list-style: none;
+    width: 250px;
+    height: 47px;
+    display: inline-block;
+    border-bottom: 1px solid #40444b;
+    overflow: hidden;
+    transition: 0.5s;
+    margin-top: -20px;
+    padding: 0px;
+    letter-spacing: normal
+}
+
+.nav-left-ul-li a {
+    text-decoration: none;
+    width: 240px;
+    height: 40px;
+    display: inline-block;
+    color: #6d737d;
+    font-size: 16px;
+}
+
+.nav-left-ul-li a:hover {
+    color: #6d737d;
+    cursor: pointer;
+}
+
+.nav-left-ul-ul {
+    line-height: 40px;
+    padding: 0px;
+    margin: 0px;
+}
+
+.nav-left-ul-ul-li {
+    list-style: none;
+
+    width: 250px;
+    height: 40px;
+    display: inline-block;
+    background-color: #121821;
+    letter-spacing: normal
+}
+
+.nav-left-ul-ul-li a {
+    text-decoration: none;
+    width: 240px;
+    height: 40px;
+    display: inline-block;
+    color: #6d737d;
+    font-size: 14px;
+    padding-left: 70px;
+
+}

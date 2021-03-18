@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="thymeleaf/customer/index/index::head">
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<link rel="stylesheet" href="../../../../static/css/detail_notice_main.css.css"
+      th:href="@{/css/detail_notice_main.css}">
+<div th:replace="thymeleaf/customer/index/index::top-div"></div>
+<div th:replace="thymeleaf/customer/index/index::background"></div>
+<div class="main-div">
+    <div class="main">
+        <div class="notice-title" th:text="${notice?.title}">
+        </div>
+        <div class="notice-main" th:utext="${notice?.content}">
+        </div>
+        <div class="notice-time" th:text="${#dates.format(notice?.createTime,'yy-MM-dd hh:mm')}">
+        </div>
+    </div>
+</div>
+</body>
+</html>

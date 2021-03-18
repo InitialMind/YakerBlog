@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="thymeleaf/common/fragment::head">
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+
+<body>
+<style>
+
+</style>
+<nav th:replace="thymeleaf/common/fragment::top"></nav>
+<nav th:replace="thymeleaf/common/fragment::left"></nav>
+<div class="div-inner" id="div-inner">
+    <div class="div-inner-color">
+        <div class="layui-btn-group demoTable">
+            <button class="layui-btn layui-btn-danger" data-type="getCheckData">删除选择的记录</button>
+            <button class="layui-btn layui-btn-warm" data-type="add">添加</button>
+        </div>
+        <table id="demo" lay-filter="test" lay-data="{id: 'idTest'}" class="layui-hide"></table>
+    </div>
+</div>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<script th:inline="javascript">
+
+    var pageNum = 1;
+    var iframe;
+    layui.use('table', function () {
+        var table = layui.table;
+
+        //第一个实例
+        table.render({
+            id: 'idTest'
+            , elem: '#demo'
+            , height: 600
+            , size: 'lg'
+            , url: '/user/admin/data' //数据接口
+            , page: true //开启分页
+            , cols: [
+                [ //表头
+                    {type: 'checkbox', fixed: 'left'},
+                    {field: 'ID', title: 'ID', sort: true, fixed: 'left'},
+                    {field: 'username', title: '用户名', sort: true, fixed: 'left'}
+                    , {field: 'nickname', title: '昵称', sort: true, fixed: 'left'}
+                    , {field: 'noticecount', title: '公告数', sort: true, fixed: 'left'}
+                    , {field: 'role', title: '角色', sort: true, fixed: 'left'}
+                    , {fixed: 'right', width: 150, align: 'center', toolbar: '#barDemo', fixed: 'left'}
+                ]
+            ]
+            , done: function (res, curr, count) {
+                pageNum = curr;
+            }
+        });
+
+        //编辑事件
+        table.on('tool(test)', function (obj) { //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+            var data = obj.data; //获得当前行数据
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            var tr = obj.tr; //获得当前行 tr 的DOM对象
+
+            if (layEvent === 'del') { //删除
+                layer.confirm('真的删除行么', function (index) {
+
+                    $.ajax({
+                        async: false,
+                        cache: false,
+                        type: 'post',
+                        url: "/user/admin/del",
+                        data: {
+                            'id': data.ID,
+                        },
+                        success: function (data) {
+                            obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                            layer.close(index);
+                        }
+                    })
+
+
+                });
+            } else if (layEvent === 'edit') { //编辑
+                layer.open({
+                    type: 2,
+                    area: ['450px', '700px'],
+                    fixed: false, //不固定
+                    maxmin: true,
+                    shadeClose: true,
+                    skin: 'open',
+                    content: ['/user/admin/edit?action=edit&&id=' + data.ID, 'no'],
+                    success: function (layero, index) {
+                        iframe = parent.window[layero.find('iframe')[0]['name']]; //得到iframe页的窗口对象，执行iframe页的方法：iframeWin.method();
+                    },
+                    end: function () {
+                        if (typeof iframe.res != "undefined") {
+
+                            obj.update({
+                                username: iframe.res.userName,
+                                role: iframe.res.role,
+                                noticecount: iframe.res.noticeCount,
+                                nickname: iframe.res.nickName,
+                                //同步更新缓存对应的值
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        //复选框事件
+        table.on('checkbox(test)', function (obj) {
+            if (typeof obj != "undefined") {
+                var data = obj.data;
+                console.log(data.address);
+            }
+        });
+        //工具栏事件
+        var $ = layui.$, active = {
+            getCheckData: function () { //获取选中数据
+                var idList = new Array();
+                var checkStatus = table.checkStatus('idTest');
+                for (var i = 0; i < checkStatus.data.length; i++) {
+                    idList[i] = checkStatus.data[i].ID;
+                }
+                //     ,data = checkStatus.data;
+                if (idList.length == 0) {
+                    layer.alert("你未选中数据");
+                } else {
+                    layer.confirm('真的要删除这' + idList.length + '行么', function (index) {
+
+                        $.ajax({
+                            url: '/user/admin/choose',
+                            async: false,
+                            cache: false,
+                            type: 'post',
+                            data: {
+                                'idList': JSON.stringify(idList),
+                            },
+                            success: function (data) {
+                                layer.close(index);
+                                table.reload('idTest', {
+                                    page: {curr: pageNum}
+                                })
+                                layer.msg("删除成功", {icon: 1});
+                            }
+                        })
+                    });
+                }
+            }
+
+            , add: function () { //添加
+                layer.open({
+                    type: 2,
+                    area: ['450px', '700px'],
+                    fixed: false, //不固定
+                    maxmin: true,
+                    shadeClose: true,
+                    skin: 'open',
+                    content: ['/user/admin/edit?action=add', 'no'],
+                    success: function (layero, index) {
+                        iframe = parent.window[layero.find('iframe')[0]['name']]; //得到iframe页的窗口对象，执行iframe页的方法：iframeWin.method();
+                    },
+                    end: function () {
+                        if (typeof iframe.res != "undefined") {
+                            table.reload('idTest', {
+                                page: {curr: pageNum}
+                            })
+
+                        }
+
+                    }
+
+                });
+            }
+        };
+        $('.demoTable .layui-btn').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+    });
+
+    function getPageNum() {
+        return pageNum;
+    }
+
+
+</script>
+<script th:inline="javascript">
+
+    var Count = $("#count").val();
+    var Limit = $("#pageSize").val();
+    var currPage = 1;
+
+    layui.use('laypage', function () {
+        var laypage = layui.laypage;
+
+        //执行一个laypage实例
+        laypage.render({
+            elem: 'test1' //注意，这里的 test1 是 ID，不用加 # 号
+            , count: Count //数据总数，从服务端得到
+            , limit: Limit
+            , jump: function (obj, first) {
+                //首次不执行
+                if (!first) {
+                    console.log(obj.curr); //得到当前页，以便向服务端请求对应页的数据。
+                    console.log(obj.limit); //得到每页显示的条数
+                    $.ajax({
+                        url: "/user/admin/page",
+                        async: false,
+                        cache: false,
+                        type: "post",
+                        data: {
+                            'pageNum': obj.curr
+                        },
+                        success: function (data) {
+                            $("#list").html(data);
+                            obj.count = $("#count").val();
+                            currPage = obj.curr;
+                        }
+                    })
+                }
+            }
+        });
+    });
+
+    function del(id) {
+
+        layui.use('layer', function () {
+            var layer = layui.layer;
+
+            layer.confirm('确定删除该记录？', {
+                btn: ['确定', '取消'] //按钮
+            }, function () {
+
+                $.ajax({
+                    url: "/user/admin/del",
+                    async: false,
+                    cache: false,
+                    data: {
+                        'id': id,
+                        'pageNum': currPage,
+                    },
+                    type: "post",
+                    success: function (data) {
+
+                        $("#list").html(data);
+                        layer.msg('成功删除', {icon: 1});
+
+                    }
+                })
+            }, function () {
+
+            });
+        });
+    }
+
+    function mod(id) {
+        layui.use('layer', function () {
+            var layer = layui.layer;
+            layer.open({
+                type: 2,
+                area: ['700px', '450px'],
+                fixed: false, //不固定
+                maxmin: true,
+
+                shadeClose: true,
+                skin: 'open',
+                content: ['/user/layer?id=' + id, 'no']
+
+            });
+        });
+    }
+
+    function add() {
+        layui.use('layer', function () {
+            var layer = layui.layer;
+            layer.open({
+                type: 2,
+                area: ['700px', '550px'],
+                fixed: false, //不固定
+                maxmin: true,
+                shadeClose: true,
+                skin: 'open',
+                content: ['/user/admin/add', 'no']
+
+            });
+        });
+
+    }
+
+    $("#del_choose").click(function () {
+        layui.use('layer', function () {
+            var layer = layui.layer;
+            var text = $("input:checkbox[name='check']:checked").map(function (index, elem) {
+                return $(elem).val();
+            }).get().join(',');
+            if (text == "") {
+                layer.msg("你还没有选中")
+            } else {
+
+                layer.confirm('确定删除这些记录？', {
+                    btn: ['确定', '取消'] //按钮
+                }, function () {
+                    $.ajax({
+                        url: '/user/admin/del_choose',
+                        async: false,
+                        type: 'post',
+                        cache: false,
+                        data: {
+                            'ids': text,
+                            'pageNum': currPage,
+                        },
+                        success: function (data) {
+                            $("#list").html(data);
+                            layer.msg('成功删除', {icon: 1});
+                        }
+                    });
+
+                }, function () {
+
+                });
+            }
+
+        })
+    })
+
+    function check_all() {
+        if ($("input:checkbox[name='p_check']").prop('checked')) {
+            $("input[type='checkbox'][name='check']").prop("checked", true);
+        } else {
+            $("input[type='checkbox'][name='check']").prop("checked", false);
+        }
+    }
+
+    function setList(html) {
+        $("#list").html(html);
+    }
+
+    function getPageNum() {
+        return currPage;
+    }
+</script>
+</body>
+</html>

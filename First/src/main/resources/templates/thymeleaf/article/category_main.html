@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>雅客论坛管理后台</title>
+    <script type="text/javascript" th:src="@{/static/jq/jquery-3.1.1.js}"></script>
+    <link th:href="@{/static/layui/css/layui.css}" rel="stylesheet" type="text/css" media="all"/>
+    <script type="text/javascript" th:src="@{/static/layui/layui.js}"></script>
+    <link th:href="@{/static/css/common_edit.css}" rel="stylesheet" type="text/css" media="all"/>
+</head>
+<body>
+<div class="div-outer">
+    <input type="hidden" th:name="ID" th:value="${category?.categoryId}">
+    <p class="p">类名:</p><input type="text" th:name="name" th:value="${category?.categoryName}">
+    <div class="btn-div">
+        <input type="button" value="确定" class="layui-btn layui-btn-normal" id="btn_y">
+        <input type="button" value="取消" class="layui-btn layui-btn-danger" style="margin-left: 50px" id="btn_n">
+
+    </div>
+</div>
+<script>
+    var res;
+    var index = parent.layer.getFrameIndex(window.name);
+    $("#btn_y").click(function () {
+        var ID = $("input[name='ID']").val();
+        var pat3 = new RegExp("^[A-Za-z0-9\u4e00-\u9fa5]+$")
+        var categoryName = $("input[name='name']").val();
+        if (getLength(categoryName) > 12 || !pat3.test(categoryName)) {
+            parent.layer.msg("类名在12个字符之内并且只能含数字、字母和汉字");
+        }
+        else {
+            $.ajax({
+                url: "/article/category/name",
+                type: 'post',
+                async: false,
+                cache: false,
+                data: {
+                    'id': ID,
+                    'name': categoryName
+                },
+                success: function (data) {
+                    if (data != "error") {
+                        var newdata = JSON.parse(data);
+                        res = newdata;
+                        parent.layer.close(index);
+                        if (typeof ID == "undefined") {
+                            parent.layer.msg("添加成功", {icon: 1});
+                        }
+                        else {
+                            parent.layer.msg("修改成功", {icon: 1});
+                        }
+                    }
+                    else {
+                        parent.layer.msg("类名已存在");
+                    }
+                }
+            })
+        }
+    })
+    $("#btn_n").click(function () {
+        parent.layer.close(index);
+    })
+
+    function getLength(str) {
+        var len = 0;
+        for (var i = 0; i < str.length; i++) {
+            if (str.charCodeAt(i) > 127 || str.charCodeAt(i) == 94) {
+                len += 2;
+            } else {
+                len++;
+            }
+        }
+        return len;
+    }
+</script>
+</body>
+</html>

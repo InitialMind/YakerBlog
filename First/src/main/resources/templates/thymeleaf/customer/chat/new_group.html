@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../../../../static/css/chat_group_manager.css"
+          th:href="@{/css/chat_group_manager.css}">
+    <script src="../../../../static/layui/layui.js" th:src="@{/static/layui/layui.js}"></script>
+    <link rel="stylesheet" href="../../../../static/fontawesome/css/font-awesome.css"
+          th:href="@{/static/fontawesome/css/font-awesome.css}">
+    <script src="../../../../static/jq/jquery-3.1.1.js" th:src="@{/static/jq/jquery-3.1.1.js}"></script>
+    <link rel="stylesheet" href="../../../../static/layui/css/layui.css" th:src="@{/static/layui/css/layui.css}">
+</head>
+<body>
+<div class="out">
+    <div class="name">
+        <p>群名称</p>
+        <input type="text">
+    </div>
+    <div class="master">
+        <p>群主</p>
+        <div class="master-main">
+            <a>
+                <img th:src="${master?.icon}">
+                <span th:text="${master?.nickName}"></span>
+            </a>
+        </div>
+    </div>
+    <div class="member">
+        <p>群成员</p>
+        <ul>
+            <li><a id="add-member">
+                <span class="member-plus"><i class="fa fa-plus fa-2x"></i></span>
+                <span>添加成员</span>
+            </a></li>
+        </ul>
+    </div>
+    <div class="member-add">
+        <div class="top">选择联系人</div>
+        <div class="add-main">
+            <p th:each="fans:${fans}"><input type="checkbox" name="add" th:value="${fans?.userId}"><img
+                    th:src="${fans?.icon}"><span th:text="${fans?.nickName}"></span></p>
+        </div>
+    </div>
+    <div class="exit">
+        <input type="button" value="创建群聊" class="layui-btn layui-btn-normal">
+    </div>
+
+</div>
+<script th:inline="javascript">
+    var index = parent.layer.getFrameIndex(window.name);
+    var result = '';
+    $("#add-member").click(function () {
+        var val = $(".name input[type='text']").val();
+
+        if (0 < val.length < 10 && val != '') {
+            $(".member").hide();
+            $(".master").hide();
+            $(".name").hide();
+            $('.member-add').show();
+        }
+        else {
+
+            parent.layer.msg("群昵称长度在0-10个字符内");
+        }
+    })
+    $(".exit input[type='button']").click(function () {
+        var val = $(".name input[type='text']").val();
+        var res = '';
+        $("input[type='checkbox']:checked").each(function () {
+            res += $(this).val() + ',';
+            ;
+        });
+        if (0 < val.length < 10 && val != '') {
+            if (res != '') {
+                res = res.substr(0, res.length - 1);
+            }
+            $.ajax({
+                cache: false,
+                async: false,
+                type: 'post',
+                url: '/customer/chat/new_group/main',
+                data: {
+                    'name': val,
+                    'list': res,
+                },
+                success: function (data) {
+                    if (data != '') {
+                        result = data;
+                        parent.layer.close(index);
+                    }
+                    else {
+                        parent.layer.msg("群昵称已被占用");
+                    }
+                }
+            })
+        }
+        else {
+            parent.layer.msg("群昵称长度在0-10个字符内");
+        }
+    })
+</script>
+</body>
+</html>

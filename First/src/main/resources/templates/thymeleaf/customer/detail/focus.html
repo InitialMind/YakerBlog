@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="thymeleaf/customer/index/index::head">
+    <title>Title</title>
+</head>
+<body>
+<link rel="stylesheet" href="../../../../static/css/detail_focus.css" th:href="@{/css/detail_focus.css}">
+<div th:replace="thymeleaf/customer/index/index::top-div"></div>
+<div th:replace="thymeleaf/customer/index/index::background"></div>
+<div class="main-div" style=" background-color: rgba(0,0,0,0);padding-top: 20px;">
+    <div class="top-card">
+        <div class="icon-div">
+            <a th:if="${same} == N"><img th:src="${master?.icon}"></a>
+            <a th:if="${same} == Y"><img th:src="${master?.icon}" th:onclick="'changeIcon('+${master?.userId}+')'"></a>
+        </div>
+        <div class="username">
+            <span style="display: inline-block" th:text="${master?.nickName}"></span>
+            <span th:if="${master?.userSex} == 男" style="margin-left: 10px;color: #4fceff"><i
+                    class="fa fa-mars"></i></span>
+            <span th:if="${master?.userSex} == 女" style="margin-left: 10px;color: #d671cb"><i
+                    class="fa fa-venus"></i></span>
+        </div>
+        <div class="personal-statement" th:text="${master?.statement}"></div>
+        <div class="focus-div" th:if="${same} == N">
+            <div class="focus-div-main">
+                <a th:if="${focus} == Y" class="focus-y" th:onclick="'focusSb('+${master?.userId}+',this)'"><i
+                        class="fa fa-check" style="margin-right: 10px"></i>已关注</a>
+                <a th:if="${focus} == N" class="focus-n" th:onclick="'focusSb('+${master?.userId}+',this)'"><i
+                        class="fa fa-plus" style="margin-right: 10px"></i>关注</a>
+                <a class="focus-y" th:onclick="'chat('+${master?.userId}+')'">私信</a>
+            </div>
+        </div>
+    </div>
+    <div class="div-left">
+        <div id="div-left">
+            <ul th:if="${same} == N">
+                <li><a id="focus-div" th:onclick="'detailFocus('+${master?.userId}+')'"><i
+                        class="fa fa-users"></i><span>Ta的关注</span><em th:text="${master?.focusCount}"></em></a>
+                    <a style="padding: 5px 14px 10px 30px;font-size: 12px"><i
+                            class="fa fa-dot-circle-o"></i><span>共同关注</span><em th:text="${commonFocus}"></em></a></li>
+                <li><a id="fans-div" th:onclick="'detailFans('+${master?.userId}+')'"><i class="fa fa-users"></i><span>Ta的粉丝</span><em
+                        th:text="${master?.fansCount}"></em></a>
+                    <a style="padding: 5px 14px 10px 30px;font-size: 12px"><i class="fa fa-dot-circle-o"></i><span>我关注的人也关注Ta</span><em
+                            th:text="${focusFocus}"></em></a></li>
+            </ul>
+            <ul th:if="${same} == Y">
+                <li style="height: 37px;"><a id="focus-div" th:onclick="'detailFocus('+${master?.userId}+')'"><i
+                        class="fa fa-users"></i><span>我的关注</span><em th:text="${master?.focusCount}"></em></a></li>
+                <li style="height: 37px;"><a id="fans-div" th:onclick="'detailFans('+${master?.userId}+')'"><i
+                        class="fa fa-users"></i><span>我的粉丝</span><em th:text="${master?.fansCount}"></em></a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="div-right">
+        <div class="right-top"><span id="right-top"></span></div>
+        <div class="focus-mes-div">
+            <ul class="focus-ul" id="inner">
+            </ul>
+        </div>
+    </div>
+</div>
+<script th:inline="javascript">
+    loadArticle('');
+
+    function loadArticle(par) {
+        $("#inner").html('');
+        layui.use('flow', function () {
+            var $ = layui.jquery; //不用额外加载jQuery，flow模块本身是有依赖jQuery的，直接用即可。
+            flow = layui.flow;
+            flow.load({
+                elem: '#inner' //指定列表容器
+                , isAuto: true
+                , done: function (page, next) { //到达临界点（默认滚动触发），触发下一页
+                    var lis = [];
+                    //以jQuery的Ajax请求为例，请求下一页数据（注意：page是从2开始返回）
+                    var param = location.search.substring(1, location.search.length);
+                    $.get('/customer/detail/focus/api/list?page=' + page + '&&' + param + '&&' + par, function (res) {
+                        //假设你的列表返回在data集合中
+                        var result = JSON.parse(res);
+                        layui.each(result.data, function (index, item) {
+                            var sex = "";
+                            var a = "";
+                            if (item.sex == "男") {
+                                sex = "<i class=\"fa fa-mars\" style=\"margin-left: 5px;color:#52b8fa\"></i>";
+                            }
+                            else {
+                                sex = "<i class=\"fa fa-venus\" style=\"margin-left: 5px;color:#fa9cf9\"></i>";
+                            }
+                            if ([[${user?.userId}]] != item.userId) {
+                                if (item.focusStatus == "N") {
+                                    a = "<a><i class='fa fa-plus' style='color: #ff8527'></i><span style='margin-left: 5px;'>关注</span></a>";
+                                }
+                                else {
+                                    a = "<a><i class='fa fa-check'></i><span style='margin-left: 5px;'>已关注</span></a>";
+                                }
+                            }
+                            lis.push("<li><div style=\"overflow: hidden;\">\n" +
+                                "                <div class=\"focus-icon\"><img src=\"" + item.icon + "\"></div>\n" +
+                                "                <div class=\"focus-main\">\n" +
+                                "                    <div style=\"font-weight: bolder;cursor: pointer;\" onclick='detailUser(" + item.userId + ")'><span class='username-span'>" + item.nickName + "</span>" + sex + "</div>\n" +
+                                "                    <div class=\"focus-info\">" +
+                                "                        <span class=\"focus-span\" style=\"border: none;text-align: left;\">关注<em onclick='detailFocus(" + item.userId + ")'>" + item.focus + "</em></span>\n" +
+                                "                        <span class=\"focus-span\">粉丝<em onclick='detailFans(" + item.userId + ")'>" + item.fans + "</em></span>" +
+                                "                        <span class=\"focus-span\">帖子<em onclick='detailUser(" + item.userId + ")'>" + item.articles + "</em></span></div>\n" +
+                                "                    <div class=\"focus-info\"><span style=\"color: #666666\">地址</span><span>" + item.province + " " + item.city + "</span></div>\n" +
+                                "                    <div class=\"focus-info\"><span style=\"color: #666666\">简介</span><span>" + item.statement + "</span></div>\n" +
+                                "                    <div class=\"focus-info\"><span style=\"color: #666666\">生日</span><span>" + item.birthday + "</span></div>\n" +
+                                "                </div><div class='focus-bt'>" + a + "</div></div></li>");
+                        });
+                        //执行下一页渲染，第二参数为：满足“加载更多”的条件，即后面仍有分页
+                        //pages为Ajax返回的总页数，只有当前页小于总页数的情况下，才会继续出现加载更多
+                        next(lis.join(''), page < result.pages);//next('列表HTML片段', page < res.pages);
+                    });
+                }
+            });
+        });
+    }
+
+    if (getParam("action") == "focus") {
+        $("#right-top").text("Ta的关注 " + [[${master?.focusCount}]]);
+        $("#focus-div").css('backgroundColor', '#e8e8ee');
+    }
+    else if (getParam("action") == "fans") {
+        $("#right-top").text("Ta的粉丝 " + [[${master?.fansCount}]]);
+        $("#fans-div").css('backgroundColor', '#e8e8ee');
+    }
+    $(document).scroll(function () {
+        if ($('.div-right').offset().top - $(window).scrollTop() <= 80) {
+            $('#div-left').attr('style', 'position:fixed;top:80px;background-color: #ffffff;width:300px;');
+        } else {
+            $('#div-left').attr('style', '');
+        }
+    })
+
+</script>
+</body>
+</html>

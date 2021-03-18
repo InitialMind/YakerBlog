@@ -1,0 +1,85 @@
+
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    background-image: url("../../images/login_background.jpg");
+    overflow: hidden;
+}
+
+.container {
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+
+}
+
+.starter-template {
+    border-radius: 4px;
+    width: 360px;
+    height: 400px;
+    margin: 200px auto;
+    padding: 20px;
+    background-color: #0C0C0C;
+    background: rgba(0, 0, 0, 0.4);
+    box-sizing: border-box;
+}
+
+.title {
+    width: 100%;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    color: #f5c655;
+    text-align: center;
+    font-weight: bolder;
+    font-size: 40px;
+}
+
+.title p {
+    margin: 0px;
+}
+
+.form-control {
+    width: 100%;
+    height: 38px;
+    border: none;
+    border-radius: 2px;
+    outline: none;
+    padding-left: 5px;
+    margin-top: 20px;
+    box-sizing: border-box;
+}
+
+.btn-primary {
+    width: 100%;
+    height: 38px;
+    border: none;
+    border-radius: 19px;
+    outline: none;
+    margin-top: 30px;
+    box-sizing: border-box;
+    background-color: #1E9FFF;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 10px;
+
+}
+
+.logon {
+    color: #3949f5;
+    text-decoration: none;
+}
+
+.danger {
+    background-color: #fff0f0;
+    margin-top: 10px;
+    border: 1px solid #ffd2d2;
+    color: #b74d46;
+    font-size: 14px;
+}
+
+.danger span {
+    margin: 0px;
+
+}

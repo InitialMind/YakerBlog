@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head">
+    <meta charset="UTF-8">
+    <title>雅客论坛后台管理</title>
+    <script type="text/javascript" th:src="@{/static/jq/jquery-3.1.1.js}"></script>
+    <script type="text/javascript" th:src="@{/static/jq/jquery.cookie.js}"></script>
+    <script type="text/javascript" th:src="@{/static/js/index.js}"></script>
+    <script type="text/javascript" th:src="@{/static/layui/layui.js}"></script>
+    <link th:href="@{/static/layui/css/layui.css}" rel="stylesheet" href="/static/layui/css/layui.css" type="text/css"
+          media="all"/>
+    <link th:href="@{/static/fontawesome/css/font-awesome.min.css}" rel="stylesheet" type="text/css" media="all"/>
+    <link th:href="@{/static/fontawesome/css/font-awesome.css}" rel="stylesheet" type="text/css" media="all"/>
+    <link th:href="@{/static/css/index.css}" rel="stylesheet" href="/static/css/index.css" type="text/css" media="all"/>
+
+
+</head>
+<body>
+<div class="div-parent">
+    <nav class="nav-top" th:fragment="top">
+
+        <div class="nav-top-div">
+            <input type="button" class="nav-top-div-bt" value="Yaker Forum" id="nav-top-bt" onclick="home()">
+            <i class="fa fa-list fa-3x" style="color: #f54739;margin-left:10px;transition:0.5s;" id="menu-bar"
+               onclick="menu_change()"></i>
+            <form th:action="@{/logout}" method="post" style="position: fixed; top:20px; right: 20px;">
+                <input type="submit" class="layui-btn layui-btn-sm layui-btn-radius layui-btn-danger" value="注销"/>
+            </form>
+        </div>
+
+    </nav>
+    <nav class="nav-left" th:fragment="left" id="nav-left">
+        <ul class="nav-left-ul">
+            <li id="l1" class="nav-left-ul-li">
+                <a id="a1" onclick="Dropdownlist('ii1','l1',2)">
+                    <i id="i1" class="fa fa-id-card-o"
+                       style="color: #9b9fa6;margin-left: 20px;margin-right: 10px;min-width: 20px;"></i>
+                    用户管理
+                    <i id="ii1" class="fa fa-chevron-left"
+                       style="color: #9b9fa6;margin-left: 100px;transition:0.5s;transform:matrix(1,0,0,1,0,0);"></i>
+                </a>
+                <ul class="nav-left-ul-ul">
+                    <li class="nav-left-ul-ul-li"><a href="/user/admin">管理员用户</a></li>
+                    <li class="nav-left-ul-ul-li"><a href="/user/common">普通用户</a></li>
+                </ul>
+            </li>
+
+            <li id="l2" class="nav-left-ul-li">
+                <a id="a2" onclick="Dropdownlist('ii2','l2',2)">
+                    <i id="i2" class="fa fa-table"
+                       style="color: #9b9fa6;margin-left: 20px;margin-right: 10px;min-width: 20px;"></i>
+                    帖子管理
+                    <i id="ii2" class="fa fa-chevron-left"
+                       style="color: #9b9fa6;margin-left: 100px;transition:0.5s;transform:matrix(1,0,0,1,0,0);"></i>
+                </a>
+                <ul class="nav-left-ul-ul">
+                    <li class="nav-left-ul-ul-li"><a href="/article/manager">帖子管理</a></li>
+                    <li class="nav-left-ul-ul-li"><a href="/article/category">分类管理</a></li>
+
+                </ul>
+            </li>
+            <li id="l3" class="nav-left-ul-li">
+                <a id="a3" onclick="a_change('l3','i3','a3')" href="/experience/index">
+                    <i id="i3" class="fa fa-sort-amount-desc"
+                       style="color: #9b9fa6;margin-left: 20px;margin-right: 10px;min-width: 20px;"></i>
+                    等级管理
+
+                </a>
+
+            </li>
+            <li id="l4" class="nav-left-ul-li">
+                <a id="a4" onclick="a_change('l4','i4','a4')" href="/chat/index">
+                    <i id="i4" class="fa fa-envelope-o"
+                       style="color: #9b9fa6;margin-left: 20px;margin-right: 10px;min-width: 20px;"></i>
+                    聊天管理
+
+                </a>
+
+            </li>
+            <li id="l5" class="nav-left-ul-li">
+                <a id="a5" onclick="a_change('l5','i5','a5')" href="/notice/index">
+                    <i id="i5" class="fa fa-newspaper-o"
+                       style="color: #9b9fa6;margin-left: 20px;margin-right: 10px;min-width: 20px;"></i>
+                    公告管理
+
+                </a>
+
+            </li>
+            <li id="l6" class="nav-left-ul-li">
+                <a id="a6" onclick="a_change('l6','i6','a6')" href="/comment/index">
+                    <i id="i6" class="fa fa-commenting-o"
+                       style="color: #9b9fa6;margin-left: 20px;margin-right: 10px;min-width: 20px;"></i>
+                    评论管理
+
+                </a>
+
+            </li>
+
+            <li id="l7" class="nav-left-ul-li">
+                <a id="a7" onclick="Dropdownlist('ii7','l7',2)">
+                    <i id="i7" class="fa fa-commenting"
+                       style="color: #9b9fa6;margin-left: 20px;margin-right: 10px;min-width: 20px;"></i>
+                    回复管理
+                    <i id="ii7" class="fa fa-chevron-left"
+                       style="color: #9b9fa6;margin-left: 100px;transition:0.5s;transform:matrix(1,0,0,1,0,0);"></i>
+                </a>
+                <ul class="nav-left-ul-ul">
+                    <li class="nav-left-ul-ul-li"><a href="/reply/comment/index">评论回复</a></li>
+                    <li class="nav-left-ul-ul-li"><a href="/reply/reply/index">回复回复</a></li>
+
+                </ul>
+            </li>
+            <li id="l8" class="nav-left-ul-li">
+                <a id="a8" onclick="Dropdownlist('ii8','l8',3)">
+                    <i id="i8" class="fa fa-thumbs-o-up"
+                       style="color: #9b9fa6;margin-left: 20px;margin-right: 10px;min-width: 20px;"></i>
+                    点赞管理
+                    <i id="ii8" class="fa fa-chevron-left"
+                       style="color: #9b9fa6;margin-left: 100px;transition:0.5s;transform:matrix(1,0,0,1,0,0);"></i>
+                </a>
+                <ul class="nav-left-ul-ul">
+                    <li class="nav-left-ul-ul-li"><a href="/admire/article/index">文章点赞</a></li>
+                    <li class="nav-left-ul-ul-li"><a href="/admire/comment/index">评论点赞</a></li>
+                    <li class="nav-left-ul-ul-li"><a href="/admire/reply/index">回复点赞</a></li>
+
+                </ul>
+            </li>
+            <li id="l9" class="nav-left-ul-li">
+                <a id="a9" onclick="a_change('l9','i9','a9')" href="/personal/index">
+                    <i id="i9" class="fa fa-user-o"
+                       style="color: #9b9fa6;margin-left: 20px;margin-right: 10px;min-width: 20px;"></i>
+                    个人资料
+                </a>
+
+            </li>
+        </ul>
+    </nav>
+    <div class="div-inner" id="div-inner">
+        <div class="div-inner-color"></div>
+
+    </div>
+</div>
+
+</body>
+
+</html>

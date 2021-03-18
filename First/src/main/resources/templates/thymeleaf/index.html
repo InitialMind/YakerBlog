@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+</body>
+<script>
+    $("#close").click(function () {
+        $("#notice")[0].pause();
+    })
+    var websocket = null;
+    if ('WebSocket' in window) {
+        websocket = new WebSocket("ws://localhost:8080/sell/webSocket");
+    }
+    else {
+        alert("该浏览器不支持websocket");
+    }
+    websocket.onopen = function (ev) {
+        console.log("建立链接");
+    }
+    websocket.onclose = function (ev) {
+        console.log("关闭连接");
+    }
+    websocket.onmessage = function (ev) {
+        console.log("接收数据:" + ev.data);
+        $("#myModal").modal('show');
+        $("#notice")[0].play();
+    }
+    websocket.onerror = function (ev) {
+        alert("通信发生错误!");
+
+
+    }
+    window.onbeforeunload = function (ev) {
+        websocket.close();
+    }
+</script>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="thymeleaf/customer/index/index::head">
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+</head>
+<body>
+<link rel="stylesheet" href="../../../../static/css/detail_article.css" th:href="@{/css/detail_article.css}">
+<div th:replace="thymeleaf/customer/index/index::top-div"></div>
+<div th:replace="thymeleaf/customer/index/index::background"></div>
+<div class="main-div">
+    <div th:replace="thymeleaf/customer/index/index::menu-div"></div>
+    <div class="inner-div" id="inner">
+        <div class='article-div' style="min-height: 700px;">
+            <div class="article-title"><span th:text="${article?.title}"></span></div>
+            <hr class="layui-bg-red">
+            <div class="article-content">
+                <div th:utext="${article?.content}"></div>
+            </div>
+            <div class="article-time"><span th:text="'By：'+${author}"></span><span
+                    th:text="${#dates.format(article?.createTime,'yyyy-MM-dd HH:MM:SS')}"></span></div>
+            <hr class="layui-bg-red">
+            <div>
+                <div class="article-comment">
+                    <ul>
+                        <li><a id="commentArticle"><i class="fa fa-commenting-o fa-3x"></i><span
+                                th:text="${article?.commentCount}"></span></a></li>
+                        <li th:if="${admireStatus} == Y"><a onclick="admire(this)" style="color:#ff8527"><i
+                                class="fa fa-thumbs-o-up fa-3x"></i><span th:text="${article?.admireCount}"></span></a>
+                        </li>
+                        <li th:if="${admireStatus} == N"><a onclick="admire(this)"><i
+                                class="fa fa-thumbs-o-up fa-3x"></i><span th:text="${article?.admireCount}"></span></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="article-div"><textarea id="LAY_edit" class="layui-textarea"></textarea>
+            <div style="margin-top: 5px;float: right"><input type="button" value="评论" id="article_comment" class="layui-btn layui-btn-normal  "></div>
+        </div>
+    </div>
+    <div th:replace="thymeleaf/customer/index/index::mes-div"></div>
+</div>
+<script th:inline="javascript">
+    $("#ticket").click(function () {
+        $.ajax({
+            async:false,
+            cache:false,
+            type: 'post',
+            url: '/customer/detail/article/t',
+            data: {},
+            success:function (data) {
+                console.log(data);
+            }
+        })
+    })
+
+    layui.use('layedit', function () {
+        var layedit = layui.layedit
+            , $ = layui.jquery;
+        layedit.build('LAY_edit', {
+            tool: ['face', 'link', '|', 'left', 'center', 'right', 'strong', 'italic', 'underline', 'del'],
+            height: 100,
+        })
+
+    })
+    var layer;
+    layui.use('layer', function () {
+        layer = layui.layer;
+    })
+    var admireStatus = [[${admireStatus}]];
+    var id = [[${article?.articleId}]];
+    layui.use('flow', function () {
+        var $ = layui.jquery; //不用额外加载jQuery，flow模块本身是有依赖jQuery的，直接用即可。
+        var flow = layui.flow;
+        flow.load({
+            elem: '#inner' //指定列表容器
+            , isAuto: true
+            , done: function (page, next) { //到达临界点（默认滚动触发），触发下一页
+                var lis = [];
+                //以jQuery的Ajax请求为例，请求下一页数据（注意：page是从2开始返回）
+                $.get('/customer/detail/article/api/list?page=' + page + '&&id=' + id, function (res) {
+                    //假设你的列表返回在data集合中
+                    var result = JSON.parse(res);
+                    console.log(result.data);
+
+                    if (result.data != "还没有人评论") {
+                        layui.each(result.data, function (index, item) {
+
+
+                            var replydiv = "";
+                            layui.each(item.replys, function (index, reply) {
+                                var admire_color = '';
+                                if (reply.admireStatus == "Y") {
+                                    admire_color = "#ff8527";
+                                } else {
+                                    admire_color = "#666";
+                                }
+                                var delLi = "";
+                                if (reply.master == [[${user.userId}]]) {
+                                    delLi = "<li style='border-right: 1px solid #cccccc'><span><a onclick='deleteComment(" + reply.replyId + ",\"reply\")'>删除</a></span></li>";
+                                }
+                                replydiv += "<div class='reply-div'id='reply" + reply.replyId + "'><div><a onclick='detailUser(" + reply.replyUserId + ")'>" + reply.nickName + "</a>    回复:<a onclick='detailUser(" + reply.toUserId + ")'>@" + reply.toUser + "</a>:" + reply.content + "</div>" +
+                                    "<div class='comment-div-time'>" + reply.time + "<div class='admire-div'>" +
+                                    "<ul><li><a style='color: " + admire_color + ";' onclick='admire_reply(this," + reply.replyId + ",\"reply\")'><i class='fa fa-thumbs-o-up' ></i><em style='margin-left: 5px;font-style: normal'>" + reply.admires + "</em></a></li>" +
+                                    "<li style='border-right: 1px solid #cccccc'><a onclick='replyComment(" + reply.replyId + ',' + item.commentId + ",\"reply\")'>回复</a></li>" + delLi + "</ul></div></div></div>"
+                            });
+
+                            var admire_color = '';
+                            if (item.admireStatus == "Y") {
+                                admire_color = "#ff8527";
+                            } else {
+                                admire_color = "#666";
+                            }
+                            var delLi = "";
+                            if (item.master == [[${user.userId}]]) {
+                                delLi = "<li style='border-right: 1px solid #cccccc'><span><a onclick='deleteComment(" + item.commentId + ",\"comment\")'>删除</a></span></li>";
+                            }
+                            lis.push("<div class='article-div' style='background-color:#f2f2f5;' id=''><div class='article-div-icon'><img width='40px;' src='" + item.icon + "'></div><div style='padding-left: 50px;'>" +
+                                "<div id='comment" + item.commentId + "'><div class='comment-div'><a onclick='detailUser(" + item.userId + ")'>" + item.nickName + "</a>: " + item.content + "</div>" +
+                                "<div class='comment-div-time'>" + item.time + "<div class='admire-div'><ul><li><span><a onclick='admire_reply(this," + item.commentId + ",\"comment\")'style='color:" + admire_color + ";'><i class='fa fa-thumbs-o-up' ></i><em style='margin-left: 5px;font-style: normal'>" + item.admires + "</em></a></span></li>" +
+                                "<li style='border-right: 1px solid #cccccc'><span><a onclick='replyComment(" + item.commentId + "," + item.commentId + ",\"comment\")'>回复</a></span></li>" + delLi + "</ul></div></div></div>" +
+                                "<div id='comment" + item.commentId + "' style='background-color:#eaeaec;margin-top: 8px'>" + replydiv + "</div></div></div>");
+                        });
+                    }
+                    else {
+                        lis.push("<div class='article-div' style='text-align: center'>还没人评论</div>");
+                    }
+
+                    //执行下一页渲染，第二参数为：满足“加载更多”的条件，即后面仍有分页
+                    //pages为Ajax返回的总页数，只有当前页小于总页数的情况下，才会继续出现加载更多
+                    next(lis.join(''), page < result.pages);//next('列表HTML片段', page < res.pages);
+                });
+            }
+        });
+    });
+
+    // 点击 回复评论 弹出编辑器
+    function replyComment(id, commentId, type) {
+        var parerntDiv = $("#" + type + id);
+
+        if ($("#" + type + id + ' #replyDiv').length) {
+            $("#" + type + id + ' #replyDiv').remove();
+        }
+        else {
+            var edit = "";
+            if (type == "comment") {
+                edit = "comment_edit";
+            }
+            else if (type == "reply") {
+                edit = "reply_edit";
+            }
+            var replyDiv = "<div id='replyDiv'><div class='angle-wrapper'><textarea id='" + edit + id + "' class='layui-textarea' style='border:none;'></textarea>" +
+                "</div><button class='layui-btn site-demo-layedit' data-type='content'>回复</button></div>";
+            parerntDiv.append(replyDiv);
+            replyEdit(id, commentId, edit);
+            $('.layui-layedit').css('borderColor', '#fff');
+        }
+    }
+
+    // 回复的编辑器
+    function replyEdit(id, commentId, edit) {
+        layui.use('layedit', function () {
+            var layedit = layui.layedit
+                , $ = layui.jquery;
+            var index = layedit.build(edit + id, {
+                tool: ['face', 'link', '|', 'left', 'center', 'right', 'strong', 'italic', 'underline', 'del'],
+                height: 50,
+            })
+            var active = {
+                content: function () {
+                    var content = layedit.getContent(index); //获取编辑器内容
+                    if (getLength(content) == 0 || getLength(content) > 100) {
+                        layer.msg('评论长度在1-100个字符内,汉字算两个字符', {icon: 2});
+                    }
+                    else {
+                        var type = "";
+                        if (edit == "comment_edit") {
+                            type = "回复评论";
+                        } else {
+                            type = "回复回复";
+                        }
+                        $.ajax({
+                            type: 'post',
+                            cache: false,
+                            async: false,
+                            url: '/customer/detail/article/reply',
+                            data: {
+                                'content': content,
+                                'type': type,
+                                'id': id,
+                                'commentId': commentId,
+                            },
+                            success: function (data) {
+                                if (data == true) {
+                                    location.reload();
+                                }
+                                else {
+                                    layer.msg('回复失败', {icon: 2})
+                                }
+                            }
+                        });
+
+
+                    }
+                }
+            };
+
+            $('.site-demo-layedit').on('click', function () {
+                var type = $(this).data('type');
+                active[type] ? active[type].call(this) : '';
+            });
+
+        })
+    }
+
+    // 回复回复
+    function replyReply(commentId, replyId) {
+        alert(commentId + "" + replyId);
+    }
+
+    // 删除评论或回复
+    function deleteComment(id, type) {
+        layer.confirm('您确定删除么？', {
+            btn: ['确定', '取消'] //按钮
+        }, function () {
+            $.ajax({
+                cache: false,
+                type: 'post',
+                async: false,
+                url: '/customer/detail/article/delete',
+                data: {
+                    'id': id,
+                    'type': type,
+                },
+                success: function (data) {
+                    if (data == true) {
+                        location.reload();
+                    }
+                    else {
+                        layer.msg('删除失败', {icon: 2})
+                    }
+                }
+            })
+        }, function () {
+
+        });
+    }
+
+    // 点赞文章
+    function admire(obj) {
+        var action = "";
+        if (admireStatus == "Y") {
+            action = "cancel";
+        } else {
+            action = "admire";
+        }
+        var $s = $(obj).children('span');
+        $.ajax({
+            type: 'post',
+            async: false,
+            cache: false,
+            url: '/customer/detail/article/admire',
+            data: {
+                'aimId': id,
+                'action': action,
+                'type': 'article',
+            },
+            success: function (data) {
+                if (data == true) {
+                    if (action == 'cancel') {
+                        admireStatus = "N";
+                        $s.text(parseInt($s.text()) - 1);
+                        $(obj).css('color', '#666');
+                        layer.msg("取消成功")
+                    } else {
+                        admireStatus = "Y";
+                        $s.text(parseInt($s.text()) + 1);
+                        $(obj).css('color', '#ff8527');
+                        layer.msg("点赞成功")
+                    }
+                }
+                else {
+                    layer.msg("点赞状态异常,请重试")
+                }
+            }
+        });
+    }
+
+    // 点赞评论或回复
+    function admire_reply(obj, aimId, type) {
+        var action = '';
+        if ($(obj).css('color') == 'rgb(255, 133, 39)') {
+            action = 'cancel';
+        }
+        else if ($(obj).css('color') == 'rgb(102, 102, 102)') {
+            action = 'admire';
+        }
+        if (action != '') {
+            var $s = $(obj).children('em');
+
+            $.ajax({
+                cache: false,
+                async: false,
+                type: 'post',
+                url: '/customer/detail/article/admire',
+                data: {
+                    'action': action,
+                    'aimId': aimId,
+                    'type': type,
+                },
+                success: function (data) {
+                    if (data == true) {
+                        if (action == "admire") {
+                            $(obj).css('color', '#ff8527');
+                            $s.text(parseInt($s.text()) + 1);
+                            layer.msg('点赞成功!', {icon: 1});
+                        } else if (action == "cancel") {
+                            $(obj).css('color', '#666666');
+                            $s.text(parseInt($s.text()) - 1);
+                            layer.msg('取消成功!', {icon: 1});
+                        }
+                    }
+                    else {
+                        layer.msg('点赞状态异常!', {icon: 2});
+                    }
+                }
+            })
+        }
+    }
+
+    // 点击文章评论按钮跳到评论处
+    $("#commentArticle").click(function () {
+        $('html,body').animate({scrollTop: $('#LAY_edit').offset().top + $(window).height() - 300}, 500);
+    })
+
+    //  评论文章
+    $("#article_comment").click(function () {
+        var content = $(window.frames["LAY_layedit_1"].document).find('body').text();
+        var html = $(window.frames["LAY_layedit_1"].document).find('body').html();
+        if ((getLength(content) == 0 && getLength(html) == 0) || getLength(content) > 100) {
+            layer.msg("评论长度在50个字以内", {icon: 2})
+        }
+        else {
+            $.ajax({
+                type: 'post',
+                cache: false,
+                async: false,
+                url: '/customer/detail/article/comment',
+                data: {
+                    'content': html,
+                    'articleId': id,
+                },
+                success: function (data) {
+                    if (data == true) {
+                        location.reload();
+                    }
+                    else {
+                        layer.msg('评论失败', {icon: 2})
+                    }
+
+                }
+            })
+
+
+        }
+    })
+
+    // 点击用户跳转到详情页
+    function detailUser(id) {
+        window.location.href = "/customer/detail/personal?id=" + id;
+    }
+
+    // 获取输入长度
+    function getLength(str) {
+        var len = 0;
+        for (var i = 0; i < str.length; i++) {
+            if (str.charCodeAt(i) > 127 || str.charCodeAt(i) == 94) {
+                len += 2;
+            } else {
+                len++;
+            }
+        }
+        return len;
+    }
+
+</script>
+</body>
+</html>

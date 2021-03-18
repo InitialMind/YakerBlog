@@ -1,0 +1,58 @@
+
+p {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-weight: bolder;
+    font-size: 17px;
+}
+
+.title {
+    width: 90%;
+    height: 50px;
+    border: 3px solid #f59a08;
+    border-radius: 5px;
+    font-size: 15px;
+    padding-left: 10px;
+    box-sizing: border-box;
+
+}
+
+.content {
+    border: 3px solid #f59a08;
+    border-radius: 5px;
+}
+
+.foot-p {
+    width: 100%;
+    height: auto;
+    padding: 0px;
+    margin: 10px 0 0 0;
+    overflow: hidden;
+
+}
+
+.foot-c {
+    width: 50%;
+    height: 100px;
+    float: left;
+    display: inline-block;
+}
+
+.foot-c input[type='text'] {
+    width: 50%;
+    padding-left: 10px;
+    box-sizing: border-box;
+    height: 40px;
+    border: 2px solid #f59a08;
+    border-radius: 3px;
+}
+
+.foot-c select {
+    width: 50%;
+    height: 40px;
+    padding-left: 10px;
+    box-sizing: border-box;
+    border: 2px solid #f59a08;
+    border-radius: 3px;
+
+}

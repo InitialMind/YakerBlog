@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="thymeleaf/customer/index/index::head">
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+</head>
+<body>
+<link rel="stylesheet" href="../../../../static/css/detail_personal.css" th:href="@{/css/detail_personal.css}">
+<div th:replace="thymeleaf/customer/index/index::top-div"></div>
+<div th:replace="thymeleaf/customer/index/index::background"></div>
+<div class="main-div" style=" background-color: rgba(0,0,0,0);padding-top: 20px;">
+    <div class="top-card">
+        <div class="icon-div">
+            <a th:if="${same} == N"><img th:src="${master?.icon}"></a>
+            <a th:if="${same} == Y"><img th:src="${master?.icon}" th:onclick="'changeIcon('+${master?.userId}+')'"></a>
+        </div>
+        <div class="username">
+            <span style="display: inline-block" th:text="${master?.nickName}"></span>
+            <span th:if="${master?.userSex} == 男" style="margin-left: 10px;color: #4fceff"><i
+                    class="fa fa-mars"></i></span>
+            <span th:if="${master?.userSex} == 女" style="margin-left: 10px;color: #d671cb"><i
+                    class="fa fa-venus"></i></span>
+        </div>
+        <div class="personal-statement" th:text="${master?.statement}"></div>
+        <div class="focus-div" th:if="${same} == N">
+            <div class="focus-div-main">
+                <a th:if="${focus} == Y" th:onclick="'focusSb('+${master?.userId}+',this)'" class="focus-y"><i
+                        class="fa fa-check" style="margin-right: 10px"></i>已关注</a>
+                <a th:if="${focus} == N" th:onclick="'focusSb('+${master?.userId}+',this)'" class="focus-n"><i
+                        class="fa fa-plus" style="margin-right: 10px"></i>关注</a>
+                <a class="focus-y" th:onclick="'chat('+${master?.userId}+')'">私信</a>
+            </div>
+        </div>
+    </div>
+    <div class="main-message">
+        <div class="main-left">
+            <div id="main-left">
+                <div class="count-div">
+                    <ul>
+                        <li><a th:onclick="'detailFocus('+${master?.userId}+')'"><strong
+                                th:text="${master?.focusCount}"></strong>
+                            <span>关注</span></a></li>
+                        <li><a th:onclick="'detailFans('+${master?.userId}+')'"><strong
+                                th:text="${master?.fansCount}"></strong>
+                            <span>粉丝</span></a></li>
+                        <li style="border: none">
+                            <a th:onclick="'detailUser('+${master?.userId}+')'"><strong
+                                    th:text="${master?.articleCount}"></strong>
+                                <span>帖子</span></a></li>
+                    </ul>
+                </div>
+                <div class="detail-mes">
+                    <ul>
+                        <li><span class="left-span"><i class="fa fa-trophy"></i></span>
+                            <span class="right-span"><a><span style="font-style: italic"
+                                                              th:text="'Lv.'+${master?.userLevel}"></span></a></span>
+                        </li>
+                        <li><span class="left-span"><i class="fa fa-map-marker"></i></span>
+                            <span class="right-span" th:text="${master?.province}+' '+${master?.city}"></span></li>
+                        <li><span class="left-span"><i class="fa fa-birthday-cake"></i></span>
+                            <span class="right-span" th:text="${#dates.format(master?.birthday,'yyyy年MM月dd日')}"></span>
+                        </li>
+                        <li><span class="left-span"><i class="fa fa-transgender"></i></span>
+                            <span class="right-span" th:text="'性别: '+${master?.userSex}"></span></li>
+                        <li><span class="left-span"><i class="fa fa-pencil-square-o"></i></span>
+                            <span class="right-span" th:text="'简介: '+${master?.statement}"></span></li>
+                    </ul>
+                    <div class="own-mes" th:if="${same} == Y" :><span id="personal_mes">编辑个人资料<i
+                            class="fa fa-angle-right"></i></span></div>
+                </div>
+            </div>
+        </div>
+        <div class="main-right" id="main-right">
+            <div class="article-search" id="article-search">
+                <ul class="article-search-ul">
+                    <li><a id="All_article">全部</a></li>
+                    <li><a id="article_category">分类<i class="fa fa-chevron-down" style="margin-left: 5px"></i></a></li>
+                </ul>
+                <div class="more-category" id="more-category">
+                    <ul>
+                        <li th:each="articleCategorie :${articleCategories}" th:text="${articleCategorie?.categoryName}"
+                            th:onclick="'ArticleCategory(\''+${articleCategorie?.categoryName}+'\')'"></li>
+                    </ul>
+                </div>
+                <div class="search-text">
+                    <span><input type="text" id="search_content" placeholder="搜索Ta的帖子"><em class="search-bt"
+                                                                                           id="search-bt"><i
+                            class="fa fa-search"
+                            style="color: #909fad;font-size: 16px;margin-left: 15px"></i></em></span>
+                </div>
+            </div>
+            <div class="article-main" id="inner">
+            </div>
+        </div>
+    </div>
+</div>
+<script th:inline="javascript">
+    var same = [[${same}]];
+    var id = [[${master?.userId}]];
+    var layer;
+    layui.use('layer', function () {
+        layer = layui.layer;
+    })
+    var flow;
+    loadArticle('');
+    $("#article_category").click(function () {
+        if ($("#more-category").css('display') == "none") {
+            $("#more-category").show();
+        }
+        else {
+            $("#more-category").hide();
+        }
+    })
+
+    $(document).scroll(function () {
+        if ($('#main-right').offset().top - $(window).scrollTop() <= 80) {
+            $('#article-search').attr('class', 'article-search-fix');
+            $('#main-left').attr('style', 'position:fixed;top:80px');
+        } else {
+            $('#article-search').attr('class', 'article-search');
+            $('#main-left').attr('style', '');
+        }
+    })
+
+    function ArticleCategory(category) {
+        $(".more-category").hide();
+        $("#article_category").html(decodeURI(category) + '<i class="fa fa-chevron-down" style="margin-left: 5px" ></i>');
+        loadArticle("category=" + decodeURI(category));
+    }
+
+    $("#All_article").click(function () {
+        $(".more-category").hide();
+        $("#article_category").html('分类' + '<i class="fa fa-chevron-down" style="margin-left: 5px" ></i>');
+        loadArticle('');
+    })
+
+    $("#search-bt").click(function () {
+        loadArticle('search=' + $("#search_content").val());
+    })
+
+    $("#personal_mes").click(function () {
+        $(".article-search").hide();
+        $(".article-search-fix").hide();
+        $("#inner").attr("style", "margin-top:0px;");
+
+        var sex = "";
+        var birthday = "<input type='text' id='birthday' value='" + [[${#dates.format(master?.birthday,\"yyyy-MM-dd\")}]] + "'>";
+        var address = "<div id=\"distpicker\">\n" +
+            "    <select id=\"province\"> </select>\n" +
+            "    <select id=\"city\"> </select>\n" +
+            "</div>";
+        if ([[${master?.userSex}]] == "男") {
+            sex = "<label style='margin-left: 0px;'><input type='radio' name='sex' checked='checked' value='男' class='a-radio'><span class='b-radio'></span>男</label>" +
+                "<label><input type='radio' name='sex'  value='女'  class='a-radio'><span class='b-radio'></span>女</label>";
+        }
+        else {
+            sex = "<label style='margin-left: 0px;'><input type='radio' name='sex' value='男' class='a-radio'><span class='b-radio'></span>男</label>" +
+                "<label><input type='radio' name='sex' checked='checked'  value='女'  class='a-radio'><span class='b-radio'></span>女</label>";
+        }
+        $("#inner").html("<div class='personal-mes'><fieldset class=\"layui-elem-field layui-field-title\"><legend>基本信息</legend><div class=\"layui-field-box\"></div></fieldset>" +
+            "<div class='personal-row'><div class='personal-row-left'>用户名</div><div class='personal-row-right'>" + [[${master?.username}]] + "<a onclick='pwd()'>修改密码</a></div></div>" +
+            "<div class='personal-row'><div class='personal-row-left'>昵&nbsp&nbsp&nbsp称</div><div class='personal-row-right'><input type='text' id='nickName' value='" + [[${master?.nickName}]] + "'></div></div>" +
+            "<div class='personal-row'><div class='personal-row-left'>性&nbsp&nbsp&nbsp别</div><div class='personal-row-right'>" + sex + "</div></div>" +
+            "<div class='personal-row'><div class='personal-row-left'>所在地</div><div class='personal-row-right'>" + address + "</div></div>" +
+            "<div class='personal-row'><div class='personal-row-left'>生&nbsp&nbsp&nbsp日</div><div class='personal-row-right'>" + birthday + "</div></div>" +
+            "<div class='personal-row'><div class='personal-row-left'>简&nbsp&nbsp&nbsp介</div><div class='personal-row-right'><textarea id='statement' onkeyup='statement()'>" + [[${master?.statement}]] + "</textarea></div></div>" +
+            "<fieldset class=\"layui-elem-field layui-field-title\"><legend><input type='button' onclick='save()' value='保存' class=\"layui-btn layui-btn-radius layui-btn-sm layui-btn-warm\"></legend><div class=\"layui-field-box\"></div></fieldset></div>");
+        $(".detail-mes").html("<div class='level-detail'>等级信息</div>" +
+            "<div class='level-detail-main'><a>Lv.1</a><p><span>当前等级: &nbsp<span>Lv." + [[${master?.userLevel}]] + "</span></span>" +
+            "<span>当前经验: &nbsp<span>" + [[${master?.experience}]] + "</span></span>" +
+            "<span style='display: block;margin-top: 3px;'>距离下个等级需要的经验: &nbsp<span>" + [[${nextLevel}]] + "</span></span></p></div>")
+        $("#distpicker").distpicker({
+            province: [[${master?.province}]],
+            city: [[${master?.city}]],
+        });
+        layui.use('laydate', function () {
+            var laydate = layui.laydate;
+            laydate.render({
+                elem: '#birthday',
+                max: 0
+            });
+        })
+    })
+
+    function manager(id) {
+        if ($("#manager_" + id).css('display') == "none") {
+            $("#manager_" + id).show();
+        }
+        else {
+            $("#manager_" + id).hide();
+        }
+    }
+
+    function statement() {
+        if (getLength($("#statement").val()) > 100) {
+            $("#statement").val($("#statement").val().substr(0, $("#statement").val().length - 1));
+        }
+    }
+
+    function pwd() {
+        layer.open({
+            type: 2,
+            area: ['460px', '460px'],
+            fixed: false, //不固定
+            maxmin: true,
+            shadeClose: true,
+            skin: 'open',
+            title: '账号安全',
+            content: ['/customer/detail/personal/pwd?id=' + id, 'no'],
+            success: function (layero, index) {
+                console.log("success");
+            },
+            end: function () {
+
+            }
+        });
+    }
+
+    function save() {
+        var nickName = $("#nickName").val();
+        var sex = $("input[name='sex']:checked").val();
+        var province = $("#province").val();
+        var city = $("#city").val();
+        var birthday = $("#birthday").val();
+        var statement = $("#statement").val();
+        var pat1 = new RegExp("^[A-Za-z0-9\u4e00-\u9fa5]+$");
+        var pat2 = new RegExp("^[1-9]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$");
+        if (!pat1.test(nickName) || getLength(nickName) > 12) {
+            parent.layer.msg("昵称只能含数字、字母、汉字且长度在1-12之间");
+        }
+        else if (province == "" || city == "") {
+            parent.layer.msg("你还没选择地址");
+        }
+        else if (!pat2.test(birthday)) {
+            parent.layer.msg("日期格式错误");
+        }
+        else if (getLength(statement) > 100) {
+            parent.layer.msg("简介长度在100个字符(50个汉字)以内");
+        }
+        else {
+            $.ajax({
+                async: false,
+                cache: false,
+                type: 'post',
+                url: '/customer/detail/personal/update',
+                data: {
+                    'id': id,
+                    'nickName': nickName,
+                    'sex': sex,
+                    'province': province,
+                    'city': city,
+                    'birthday': birthday,
+                    'statement': statement,
+                },
+                success: function (data) {
+                    if (data == true) {
+                        parent.location.reload();
+                    }
+                    else {
+                        parent.layer.msg("修改失败，请重试");
+                    }
+                }
+            })
+        }
+    }
+
+    function loadArticle(par) {
+        $("#inner").html('');
+        layui.use('flow', function () {
+            var $ = layui.jquery; //不用额外加载jQuery，flow模块本身是有依赖jQuery的，直接用即可。
+            flow = layui.flow;
+            flow.load({
+                elem: '#inner' //指定列表容器
+                , isAuto: true
+                , done: function (page, next) { //到达临界点（默认滚动触发），触发下一页
+                    var lis = [];
+                    //以jQuery的Ajax请求为例，请求下一页数据（注意：page是从2开始返回）
+                    var param = location.search.substring(1, location.search.length);
+                    $.get('/customer/detail/personal/api/list?page=' + page + '&&' + param + '&&' + par, function (res) {
+                        //假设你的列表返回在data集合中
+                        var result = JSON.parse(res);
+                        layui.each(result.data, function (index, item) {
+                            var manager = "";
+                            if (same == "Y") {
+                                manager = "<div class='more-category'id='manager_" + item.ID + "' style='top:35px;left:475px;'><ul> <li>删除</li><li>朋友圈可见</li><li>仅自己可见</li></ul></div>";
+                            }
+                            else {
+                                manager = "<div class='more-category'id='manager_" + item.ID + "' style='top:35px;left:475px;'><ul> <li>举报</li></ul></div>";
+                            }
+                            lis.push("<div class='article-div'style='width: 670px;'>" + manager + "<div style='overflow: hidden;position: relative'><div class='icon'><a href='#'><img src='" + item.icon + "' class='article-div-img' ></a></div>" +
+                                "<div class='nickName'><span><a onclick='detailUser(" + item.userId + ")'>" + item.nickName + "</a></span><p style='margin-top: 8px'>" + item.createTime + "</p></div>" +
+                                "<div class='article-manager'><i class='fa fa-chevron-down' onclick='manager(" + item.ID + ")'></i></div></div>" +
+                                "<div class='title' onclick='articleDetail(" + item.ID + ")'><p>" + item.title + "</p><span>" + item.category + "</span></div></div>");
+                        });
+                        //执行下一页渲染，第二参数为：满足“加载更多”的条件，即后面仍有分页
+                        //pages为Ajax返回的总页数，只有当前页小于总页数的情况下，才会继续出现加载更多
+                        next(lis.join(''), page < result.pages);//next('列表HTML片段', page < res.pages);
+                    });
+                }
+            });
+        });
+    }
+</script>
+</body>
+</html>

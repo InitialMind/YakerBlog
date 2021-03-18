@@ -1,0 +1,126 @@
+.main {
+    margin-top: 20px;
+    width: 100%;
+    min-height: 700px;
+    background-color: #ffffff;
+    border-radius: 5px;
+
+}
+
+.main-child {
+    width: 100%;
+    height: auto;
+    padding: 35px 30px 20px 30px;
+    box-sizing: border-box;
+    overflow: hidden;
+    border-bottom: 1px solid #ededf0;
+}
+
+.main-child::after {
+    content: "";
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 100%;
+    background-image: linear-gradient(0deg, transparent 50%, #ededf0 50%);
+}
+
+.child-left {
+    float: left;
+    width: 100px;
+    height: auto;
+    text-align: center;
+}
+
+.child-left img {
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    border-radius: 25px;
+}
+
+.child-right {
+    width: 680px;
+    height: auto;
+    float: left;
+}
+
+.child-right-top {
+    height: 50px;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 12px;
+}
+
+.child-right-top p {
+    display: block;
+    margin: 0px;
+    width: 100%;
+    height: 25px;
+    line-height: 25px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.child-right-top p:hover {
+    color: #e7620f;
+}
+
+.child-right-top span {
+    display: block;
+    width: 100%;
+    height: 25px;
+    line-height: 25px;
+    color: gray;
+}
+
+.child-right-content {
+    width: 100%;
+    height: auto;
+    line-height: 23px;
+    margin-bottom: 15px;
+    font-size: 12px;
+}
+
+.child-right-aim {
+    width: 100%;
+    height: auto;
+    background-color: #f2f2f5;
+    padding: 5px 20px 5px 20px;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.child-right-aim span {
+    line-height: 23px;
+    font-size: 12px;
+}
+
+.child-right-aim:hover {
+    color: #e7620f;
+}
+
+.top-tip {
+    width: 100%;
+    height: 50px;
+    background-color: #ffffff;
+    border-radius: 5px;
+    text-align: center;
+    line-height: 50px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #000;
+}
+
+.unRead {
+    display: inline-block;
+    width: 30px;
+    height: 15px;
+    border-radius: 3px;
+    background-color: #e7620f;
+    color: white;
+    text-align: center;
+    line-height: 15px;
+    float: right;
+    margin: 10px 7px 0 0;
+}

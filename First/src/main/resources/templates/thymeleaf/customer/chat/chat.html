@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../../../../static/jq/jquery-3.1.1.js" th:src="@{/jq/jquery-3.1.1.js}"></script>
+    <link rel="stylesheet" href="../../../../static/css/chat_main.css" th:href="@{/css/chat_main.css}">
+    <link rel="stylesheet" href="../../../../static/fontawesome/css/font-awesome.css"
+          th:href="@{/static/fontawesome/css/font-awesome.css}">
+    <link th:href="@{/static/layui/css/layui.css}" rel="stylesheet" type="text/css" media="all"/>
+    <script src="../../../../static/layui/layui.js" th:src="@{/layui/layui.js}"></script>
+    <script src="../../../../static/js/customer/index.js" th:src="@{/js/customer/index.js}"></script>
+</head>
+<style>
+    img {
+        max-width: 240px;
+        max-height: 240px;
+    }
+</style>
+<body>
+<div class="background"></div>
+<div class="out">
+    <div class="main">
+        <div class="left">
+            <div class="left-top">
+                <div class="icon">
+                    <img th:src="${user?.icon}"><span th:text="${user?.nickName}"></span>
+                    <div class="manager" onc><i class="fa fa-plus-circle"></i></div>
+                </div>
+            </div>
+            <div class="left-bottom">
+                <div class="search"><i class="fa fa-search"></i><input type="text" id="search-text"
+                                                                       placeholder="查找联系人或群"></div>
+                <div class="friend-box">
+                    <ul id="main-ul">
+                        <li th:each="box:${Boxs}" th:id="${box?.type}+'_'+${box?.boxId}" click-status="N">
+                            <div style="overflow: hidden">
+                                <div class="li-left"><img th:src="${box?.icon}"></div>
+                                <div class="li-right">
+                                    <div class="li-right-top">
+                                        <p th:text="${box?.nickName}"></p><span th:text="${box?.time}"></span>
+                                    </div>
+                                    <div class="li-right-bottom">
+                                        <p th:utext="${box?.message}"></p><span th:if="${box?.unReadCount} != 0"
+                                                                                th:text="${box?.unReadCount}"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="box-manager" th:onclick="'delBox(\''+${box?.type}+'_'+${box?.boxId}+'\')'">
+                                删除对话
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="search-res">
+                    <div id="friend">好友
+
+                    </div>
+                    <div id="group">群
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="right">
+            <div class="mes-null">您还未选中或发起聊天，快去跟好友聊一聊吧</div>
+        </div>
+    </div>
+</div>
+<script th:inline="javascript">
+    var page = 0;
+    var id = [[${user?.userId}]];
+    var lastTime;
+    var iframe;
+    var friendList = JSON.parse([[${friendList}]]);
+    var groupList = JSON.parse([[${groupList}]]);
+
+    var BoxId;
+    var BoxType;
+    //jQuery鼠标左击、右击和中击事件
+    var layer;
+    layui.use('layer', function () {
+        layer = layui.layer;
+    })
+
+    $("li").bind('contextmenu', function () {
+        return false;
+    });
+    // 新建群聊
+
+    $(".manager").click(function () {
+        layer.open({
+            title: '新建群聊',
+            content: '/customer/chat/new_group',
+            type: 2,
+            area: ['430px', '600px'],
+            success: function (layero, index) {
+                iframe = parent.window[layero.find('iframe')[0]['name']];
+            },
+            end: function () {
+                var res = JSON.parse(iframe.result);
+                console.log(res);
+                var name = '';
+                var nickName = res.nickName.substr(0, res.nickName.length - 1).split(",");
+                for (var s in nickName) {
+                    name += String.fromCharCode(parseInt(nickName[s]));
+                }
+
+                var html = " <li  id=\'groupChat_" + res.boxId + "\' click-status=\"N\">\n" +
+                    "                            <div style='overflow: hidden'><div class=\"li-left\"><img src=" + res.icon + "></div>\n" +
+                    "                            <div class=\"li-right\">\n" +
+                    "                                <div class=\"li-right-top\">\n" +
+                    "                                    <p>" + name + "</p><span></span>\n" +
+                    "                                </div>\n" +
+                    "                                <div class=\"li-right-bottom\">\n" +
+                    "                                    <p></p>\n" +
+                    "                                </div>\n" +
+                    "                            </div></div><div class='box-manager'onclick='delBox(\"groupChat_" + res.boxId + "\")'>删除对话</div></li>";
+                if ($('#groupChat_' + res.boxId).length <= 0) {
+                    $("#main-ul").html(html + $("#main-ul").html());
+                }
+
+            }
+        })
+    })
+    // 搜索好友或群
+    $("#search-text").keyup(function () {
+        var val = $("#search-text").val();
+        var friend = '';
+        var group = '';
+        if (val != '') {
+            $(".search-res").show();
+            $(".friend-box").hide();
+            for (var item in friendList.data) {
+                if (friendList.data[item].nickName.indexOf(val) >= 0) {
+                    friend += "<p id='friend_" + friendList.data[item].id + "' onclick='newBox(this)'><img src=" + friendList.data[item].icon + "><span>" + friendList.data[item].nickName + "</span></p>";
+                }
+            }
+            for (var i in groupList.data) {
+                if (groupList.data[i].nickName.indexOf(val) >= 0) {
+                    group += "<p id='group_" + groupList.data[item].id + "' onclick='newBox(this)'><img src=" + groupList.data[item].icon + "><span>" + groupList.data[item].nickName + "</span></p>";
+                }
+            }
+            $("#friend").html("好友" + friend);
+            $("#group").html("群" + group);
+        }
+        else {
+            $(".search-res").hide();
+            $(".friend-box").show();
+        }
+    })
+
+    function newBox(obj) {
+        var nid = $(obj).attr("id");
+        var type = '';
+        if (nid.split('_')[0] == 'friend') {
+            type = 'chat';
+        }
+        else {
+            type = 'groupChat';
+        }
+        $.ajax({
+            cache: false,
+            async: false,
+            type: 'post',
+            url: '/customer/chat/newBox',
+            data: {
+                'aimId': nid.split('_')[1],
+                'type': type,
+            },
+            success: function (data) {
+                if (data != '') {
+                    var html = " <li  id=" + type + "_" + data + " click-status=\"N\">\n" +
+                        "                            <div style='overflow: hidden'><div class=\"li-left\"><img src=" + $('#' + nid + ' img').attr('src') + "></div>\n" +
+                        "                            <div class=\"li-right\">\n" +
+                        "                                <div class=\"li-right-top\">\n" +
+                        "                                    <p>" + $('#' + nid + ' span').text() + "</p><span></span>\n" +
+                        "                                </div>\n" +
+                        "                                <div class=\"li-right-bottom\">\n" +
+                        "                                    <p></p>\n" +
+                        "                                </div>\n" +
+                        "                            </div></div><div class='box-manager'onclick='delBox(" + data + ")'>删除对话</div></li>";
+                    if ($('#' + type + '_' + data).length <= 0) {
+                        $("#main-ul").html(html + $("#main-ul").html());
+                    }
+                }
+                $(".search-res").hide();
+                $(".friend-box").show();
+
+            }
+        });
+    }
+
+    // 删除会话框
+    function delBox(id) {
+
+        $.ajax({
+            cache: false,
+            async: false,
+            type: 'post',
+            url: '/customer/chat/delBox',
+            data: {
+                "boxId": id.split("_")[1],
+            },
+            success: function (data) {
+                if (data == true) {
+                    if ($("#" + id).attr("click-status") == "Y") {
+                        $(".right").html("<div class=\"mes-null\">您还未选中或发起聊天，快去跟好友聊一聊吧</div>");
+                    }
+                    $("#" + id).remove();
+                }
+                else {
+                    layer.msg('删除失败，请重试!');
+                }
+            }
+        })
+
+    }
+
+    $('body').click(function () {
+        $('.box-manager').hide();
+    })
+    $(document).on('scroll', '.mes-main', function (e) {
+        console.log(123);
+    })
+
+    $('body').on('mousedown', 'li', function (e) {
+        if (e.which == 3) {
+            var bid = $(e.currentTarget).attr("id");
+            var pos = $(e.currentTarget).offset();
+            var x = e.pageX;
+            var y = e.pageY;
+            $('#' + bid + ' .box-manager').css({'left': x - pos.left, 'top': y - pos.top});
+            $('.box-manager').hide();
+            $('#' + bid + ' .box-manager').show();
+        } else if (e.which == 1) {
+            if (e.target.innerHTML != "删除对话") {
+
+                var boxType = $(e.currentTarget).attr("id").split("_")[0];
+                var boxId = $(e.currentTarget).attr("id").split("_")[1];
+                if (BoxId != boxId) {
+                    BoxId = boxId;
+                    BoxType = boxType;
+                    $("li").attr("style", "");
+                    $(e.currentTarget).css("backgroundColor", "#292b2e");
+                    $(e.currentTarget).css("border-right", "solid 2px #ff9703");
+                    $("li").attr("click-status", "N");
+                    $(e.currentTarget).attr("click-status", "Y");
+                    $.ajax({
+                        cache: false,
+                        async: false,
+                        type: 'post',
+                        url: '/customer/chat/index/with',
+                        data: {
+                            'id': boxId,
+                            'type': boxType,
+                        },
+                        success: function (data) {
+                            if (data != "") {
+                                page = 0;
+                                var res = JSON.parse(data);
+                                $("#" + boxType + "_" + boxId + " .li-right-bottom span").remove();
+                                var manager = "";
+                                if (boxType == 'groupChat') {
+                                    manager = "<div class='group-manager' onclick='group_manager(" + boxId + ")'><i class='fa fa-user-o'></i></div>";
+                                }
+                                $(".right").html("<div class=\"mes-top\">" + res.nickName + manager + "</div><div class='mes-main'></div>");
+                                for (var item in res.data) {
+                                    lastTime = res.data[item].time;
+                                    for (var i in res.data[item].data) {
+                                        var html = "";
+                                        if (res.data[item].data[i].masterId == id) {
+                                            html = "                <div class=\"mes-child\">\n" +
+                                                "                    <div class=\"mes-child-main\">\n" +
+                                                "                        <div class=\"mes-icon float-r\"><img src=" + res.data[item].data[i].icon + "></div>\n" +
+                                                "                        <div class=\"mes-box float-r\"><div class=\"mes-box-l\">" + res.data[item].data[i].content + "</div></div>\n" +
+                                                "                        <div class=\"mes-time float-r\">" + res.data[item].data[i].time + "</div>\n" +
+                                                "                    </div></div>";
+                                        }
+                                        else {
+                                            html = "                <div class=\"mes-child\">\n" +
+                                                "                    <div class=\"mes-child-main\">\n" +
+                                                "                        <div class=\"mes-icon float-l\"><img src=" + res.data[item].data[i].icon + "></div>\n" +
+                                                "                        <div class=\"mes-box-mine float-l\"><div class=\"mes-box-l\" style='background-color: #ffffff'>" + res.data[item].data[i].content + "</div></div>\n" +
+                                                "                        <div class=\"mes-time float-l\" style='text-align: right'>" + res.data[item].data[i].time + "</div>\n" +
+                                                "                    </div></div>";
+                                        }
+
+                                        $(".mes-main").html(html + $(".mes-main").html());
+
+                                    }
+                                    $(".mes-main").html("<p class='time-p'>" + res.data[item].time + "</p>" + $(".mes-main").html());
+                                }
+                                $(".right").append("<div class='mes-edit'><textarea id='LAY_edit'></textarea></div>" +
+                                    "<div style='text-align: right;padding-right: 20px;box-sizing: border-box'>" +
+                                    "<input type='button' class=\"layui-btn layui-btn-warm layui-btn-sm\" onclick='sendMes()' value='发送'></div>");
+                                layui.use('layedit', function () {
+                                    var layedit = layui.layedit
+                                        , $ = layui.jquery;
+                                    layedit.set({
+                                        uploadImage: {
+                                            url: '/upload/image'
+                                            , type: 'POST'
+                                            ,
+                                        }
+                                    })
+
+                                    layedit.build('LAY_edit', {
+                                        tool: ['face', 'link', '|', 'strong', 'italic', 'image'],
+                                        height: 130,
+                                    })
+
+                                })
+                                setTimeout(function () {
+                                    $(window.frames[name ^= 'LAY_layedit_'].document).find('style').append("img{max-width:240px;max-height:240px}");
+                                }, 100);
+                                $('.mes-main').scrollTop($('.mes-main')[0].scrollHeight);
+                                $('.mes-main').scroll(function () {
+                                    if ($('.mes-main').scrollTop() <= 0) {
+                                        $.ajax({
+                                            cache: false,
+                                            async: false,
+                                            type: 'post',
+                                            url: '/customer/chat/chat_record',
+                                            data: {
+                                                'boxId': boxId,
+                                                'page': page,
+                                            },
+                                            success: function (data) {
+                                                if (data != "") {
+                                                    var res = JSON.parse(data);
+                                                    for (var item in res.data) {
+                                                        lastTime = res.data[item].time;
+                                                        for (var i in res.data[item].data) {
+                                                            var html = "";
+                                                            if (res.data[item].data[i].masterId == id) {
+                                                                html = "                <div class=\"mes-child\">\n" +
+                                                                    "                    <div class=\"mes-child-main\">\n" +
+                                                                    "                        <div class=\"mes-icon float-r\"><img src=" + res.data[item].data[i].icon + "></div>\n" +
+                                                                    "                        <div class=\"mes-box float-r\"><div class=\"mes-box-l\">" + res.data[item].data[i].content + "</div></div>\n" +
+                                                                    "                        <div class=\"mes-time float-r\">" + res.data[item].data[i].time + "</div>\n" +
+                                                                    "                    </div></div>";
+                                                            }
+                                                            else {
+                                                                html = "                <div class=\"mes-child\">\n" +
+                                                                    "                    <div class=\"mes-child-main\">\n" +
+                                                                    "                        <div class=\"mes-icon float-l\"><img src=" + res.data[item].data[i].icon + "></div>\n" +
+                                                                    "                        <div class=\"mes-box-mine float-l\"><div class=\"mes-box-l\" style='background-color: #ffffff'>" + res.data[item].data[i].content + "</div></div>\n" +
+                                                                    "                        <div class=\"mes-time float-l\" style='text-align: right'>" + res.data[item].data[i].time + "</div>\n" +
+                                                                    "                    </div></div>";
+                                                            }
+
+                                                            $(".mes-main").html(html + $(".mes-main").html());
+
+                                                        }
+                                                        $(".mes-main").html("<p class='time-p'>" + res.data[item].time + "</p>" + $(".mes-main").html());
+                                                    }
+                                                    page += 1;
+                                                }
+                                            }
+                                        })
+                                    }
+                                })
+                            }
+                            else {
+                                $(".right").html("<div class=\"mes-null\">群聊不存在或者你不在群聊内</div>");
+                            }
+                        }
+                    })
+                }
+            }
+
+        }
+    })
+
+
+    function group_manager(id) {
+        layer.open({
+            title: '群信息',
+            content: '/customer/chat/group_manager?id=' + id,
+            type: 2,
+            area: ['430px', '600px'],
+            success: function (layero, index) {
+                iframe = parent.window[layero.find('iframe')[0]['name']];
+            },
+            end: function () {
+                $("#groupChat_" + id + " .li-right-top p").text(iframe.group_name);
+                $(".mes-top").html(iframe.group_name + "<div class='group-manager' onclick='group_manager(" + id + ")'><i class='fa fa-user-o'></i></div>");
+            }
+        })
+
+    }
+
+    function sendMes() {
+        var content = $(window.frames[name ^= 'LAY_layedit_'].document).find('body').html();
+        if (content == "") {
+            layer.msg("你还没有输入信息");
+        }
+        else if (getLength($(window.frames[name ^= 'LAY_layedit_'].document).find('body').text()) > 100) {
+            layer.msg("内容在50个字以内");
+        }
+        else {
+            if (BoxType == "groupChat") {
+                $.ajax({
+                    cache: false,
+                    async: false,
+                    type: 'post',
+                    url: '/customer/chat/inGroup',
+                    data: {
+                        'boxId': BoxId,
+                    },
+                    success: function (data) {
+                        console.log(data);
+                        if (data == true) {
+                            var date = new Date();
+                            if (date.Format("yy-MM-dd") != lastTime) {
+                                $(".mes-main").append("<p class='time-p'>" + date.Format("yy-MM-dd") + "</p>");
+                                lastTime = date.Format("yy-MM-dd");
+                            }
+                            var ht = "                <div class=\"mes-child\">\n" +
+                                "                    <div class=\"mes-child-main\">\n" +
+                                "                        <div class=\"mes-icon float-r\"><img src=" + [[${user?.icon}]] + "></div>\n" +
+                                "                        <div class=\"mes-box float-r\"><div class=\"mes-box-l\">" + content + "</div></div>\n" +
+                                "                        <div class=\"mes-time float-r\">" + date.Format("hh:mm") + "</div>\n" +
+                                "                    </div>";
+                            $(".mes-main").append(ht);
+                            $('.mes-main').scrollTop($('.mes-main')[0].scrollHeight);
+                            $("#" + BoxType + "_" + BoxId + " .li-right-bottom p").text(content);
+                            $("#" + BoxType + "_" + BoxId + " .li-right-top span").text(date.Format('hh:mm'));
+                            var res = "";
+                            for (var i = 0; i < content.length; i++) {
+                                res += content[i].charCodeAt().toString() + " ";
+                            }
+                            $(window.frames[name ^= 'LAY_layedit_'].document).find('body').html('');
+                            websocket.send('{\"boxId\":' + BoxId + ',\"content\":\"' + res + '\",\"sendId\":' + id + ',\"time\":\"' + date.Format("yyyy-MM-dd hh:mm:ss") + '\",\"icon\":\"' + [[${user?.icon}]] + '\"}');
+
+                        }
+                        else {
+
+                            $(".right").html("<div class=\"mes-null\">群聊不存在或者你不在群聊内</div>");
+                        }
+                    }
+                });
+            }
+            else {
+                var date = new Date();
+                if (date.Format("yy-MM-dd") != lastTime) {
+                    $(".mes-main").append("<p class='time-p'>" + date.Format("yy-MM-dd") + "</p>");
+                    lastTime = date.Format("yy-MM-dd");
+                }
+                var ht = "                <div class=\"mes-child\">\n" +
+                    "                    <div class=\"mes-child-main\">\n" +
+                    "                        <div class=\"mes-icon float-r\"><img src=" + [[${user?.icon}]] + "></div>\n" +
+                    "                        <div class=\"mes-box float-r\"><div class=\"mes-box-l\">" + content + "</div></div>\n" +
+                    "                        <div class=\"mes-time float-r\">" + date.Format("hh:mm") + "</div>\n" +
+                    "                    </div>";
+                $(".mes-main").append(ht);
+                $('.mes-main').scrollTop($('.mes-main')[0].scrollHeight);
+                $("#" + BoxType + "_" + BoxId + " .li-right-bottom p").text(content);
+                $("#" + BoxType + "_" + BoxId + " .li-right-top span").text(date.Format('hh:mm'));
+                var res = "";
+                for (var i = 0; i < content.length; i++) {
+                    res += content[i].charCodeAt().toString() + " ";
+                }
+                $(window.frames[name ^= 'LAY_layedit_'].document).find('body').html('');
+                websocket.send('{\"boxId\":' + BoxId + ',\"content\":\"' + res + '\",\"sendId\":' + id + ',\"time\":\"' + date.Format("yyyy-MM-dd hh:mm:ss") + '\",\"icon\":\"' + [[${user?.icon}]] + '\"}');
+
+            }
+
+        }
+    }
+
+    var websocket = null;
+    if ('WebSocket' in window) {
+        websocket = new WebSocket("ws://localhost:8080/customer/webSocket");
+    }
+    else {
+        alert("该浏览器不支持websocket");
+    }
+    websocket.onopen = function (ev) {
+        console.log("建立链接");
+
+    }
+    websocket.onclose = function (ev) {
+        console.log("关闭连接");
+    }
+    websocket.onmessage = function (ev) {
+        console.log("接收数据:" + ev.data);
+        var json = JSON.parse(ev.data);
+        var content = json.content;
+        var strings = content.substr(0, content.length - 1).split(" ");
+        var res = "";
+        for (var s in strings) {
+            res += String.fromCharCode(parseInt(strings[s]));
+        }
+        var icon = json.icon;
+        var boxId = json.boxId;
+        var time = new Date()
+
+        var ht = "                <div class=\"mes-child\">\n" +
+            "                    <div class=\"mes-child-main\">\n" +
+            "                        <div class=\"mes-icon float-l\"><img src=" + icon + "></div>\n" +
+            "                        <div class=\"mes-box-mine float-l\"><div class=\"mes-box-l\" style='background-color: #ffffff'>" + res + "</div></div>\n" +
+            "                        <div class=\"mes-time float-l\" style='text-align: right'>" + time.Format('hh:mm') + "</div>\n" +
+            "                    </div>";
+
+        if ($("#" + boxId).length > 0) {
+            if ($("#" + boxId).attr("click-status") == "Y") {
+                $(".mes-main").append(ht);
+                $('.mes-main').scrollTop($('.mes-main')[0].scrollHeight);
+                $("#" + boxId + " .li-right-bottom p").html(res);
+                $("#" + boxId + " .li-right-top span").text(time.Format('hh:mm'));
+            }
+            else {
+                $.ajax({
+                    cache: false,
+                    async: false,
+                    type: 'post',
+                    url: '/customer/chat/unRead',
+                    data: {
+                        "boxId": boxId.split("_")[1],
+                    },
+                    success: function (data) {
+
+                        $("#" + boxId + " .li-right-bottom").html("<p>" + res + "</p><span>" + data + "</span>");
+                        $("#" + boxId + " .li-right-top span").text(time.Format('hh:mm'));
+
+                    }
+                });
+
+            }
+        }
+        else {
+            $.ajax({
+                cache: false,
+                async: false,
+                type: 'post',
+                url: '/customer/chat/getMsg',
+                data: {
+                    "boxId": boxId.split("_")[1],
+                },
+                success: function (data) {
+                    console.log(data);
+                    var box = JSON.parse(data);
+                    var html = " <li  id=" + boxId + " click-status=\"N\">\n" +
+                        "                            <div style='overflow: hidden'><div class=\"li-left\"><img src=" + box.icon + "></div>\n" +
+                        "                            <div class=\"li-right\">\n" +
+                        "                                <div class=\"li-right-top\">\n" +
+                        "                                    <p>" + box.nickName + "</p><span>" + time.Format('MM-dd hh:mm') + "</span>\n" +
+                        "                                </div>\n" +
+                        "                                <div class=\"li-right-bottom\">\n" +
+                        "                                    <p>" + res + "</p><span>" + box.unRead + "</span>\n" +
+                        "                                </div>\n" +
+                        "                            </div></div><div class='box-manager'onclick='delBox(" + boxId + ")'>删除对话</div></li>";
+                    $("#main-ul").html(html + $("#main-ul").html());
+                }
+            })
+        }
+
+    }
+    websocket.onerror = function (ev) {
+        alert("通信发生错误!");
+
+
+    }
+    window.onbeforeunload = function (ev) {
+        websocket.close();
+    }
+</script>
+</body>
+</html>

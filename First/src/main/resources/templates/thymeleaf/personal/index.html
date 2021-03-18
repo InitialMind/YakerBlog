@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="thymeleaf/common/fragment::head">
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<link th:href="@{/css/article_manager.css}" rel="stylesheet" type="text/css" media="all"/>
+<nav th:replace="thymeleaf/common/fragment::top"></nav>
+<nav th:replace="thymeleaf/common/fragment::left"></nav>
+<div class="div-inner" id="div-inner">
+    <div class="div-inner-color">
+        <p>账号名: <span th:text="${admin?.username}"></span></p>
+
+        <p>昵称:</p>
+        <input type="text" th:value="${admin?.nickName}" th:name="nickName" placeholder="输入昵称..." class="title">
+        <p>密码:</p>
+        <input type="password" th:value="${admin?.userPwd}" th:name="password" placeholder="输入密码..." class="title">
+        <p>确认密码:</p>
+        <input type="password" th:value="${admin?.userPwd}" th:name="tpassword" placeholder="确认密码..." class="title">
+        <p>发布公告数:<span th:text="${admin?.noticeCount}"></span></p>
+        <div style="margin-top: 50px;">
+            <input type="button" th:value="保存" id="btn_y" class="layui-btn layui-btn-normal "
+                   style="width: 45%;border-radius: 19px">
+        </div>
+    </div>
+</div>
+<script th:inline="javascript">
+    var layer;
+    var id = [[${admin?.adminId}]];
+    layui.use('layer', function () {
+        layer = layui.layer;
+
+    });
+    $("#btn_y").click(function () {
+
+        var nickName = $("input[name='nickName']").val();
+        var password = $("input[name='password']").val();
+        var tpassword = $("input[name='tpassword']").val();
+
+        if (getLength(nickName) == 0 || getLength(nickName) > 16 || !isBlank(nickName)) {
+            layer.msg("昵称长度在1-16个字符之间,中文算两个字符,不能含空格");
+        }
+        else if (getLength(password) < 6 || getLength(password) > 16 || !isBlank(password)) {
+            layer.msg("密码长度在6-16之间,不能含空格");
+        }
+        else if (password != tpassword) {
+            layer.msg("两次输入的密码不一致");
+        }
+        else {
+            $.ajax({
+                url: "/personal/edit",
+                type: "post",
+                async: false,
+                cache: false,
+                data: {
+                    'id': id,
+                    'nickName': nickName,
+                    'password': password,
+                },
+                success: function (data) {
+                    if (data == true) {
+                        layer.msg("修改成功", {icon: 1});
+                    }
+                    else {
+                        layer.msg("修改失败", {icon: 2});
+                    }
+                }
+
+            })
+
+        }
+
+    })
+
+    function isBlank(s) {
+        for (var i = 0; i < s.length; i++) {
+            if (s[i] == " ") {
+                return false;
+            }
+
+        }
+        return true;
+    }
+
+    function getLength(str) {
+        var len = 0;
+        for (var i = 0; i < str.length; i++) {
+            if (str.charCodeAt(i) > 127 || str.charCodeAt(i) == 94) {
+                len += 2;
+            } else {
+                len++;
+            }
+        }
+        return len;
+    }
+
+    a_change('l9', 'i9', 'a9');// 菜单目录样式变化
+</script>
+</body>
+</html>

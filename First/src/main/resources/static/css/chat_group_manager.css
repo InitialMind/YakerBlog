@@ -1,0 +1,284 @@
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+    border-top: 2px solid rgb(250, 125, 60);
+}
+
+.out {
+    height: 100%;
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.name {
+    height: 70px;
+    padding-bottom: 20px;
+    box-sizing: border-box;
+    border-bottom: 1px solid #e2e0f4;
+}
+
+.name::after {
+    content: "";
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 100%;
+    background-image: linear-gradient(0deg, transparent 50%, #e2e0f4 50%);
+}
+
+.name p {
+    display: block;
+    width: 100%;
+    height: 25px;
+    line-height: 25px;
+    font-size: 13px;
+    font-weight: 700;
+    margin: 0px;
+    color: #0C0C0C;
+}
+
+.name span {
+    display: inline-block;
+    width: auto;
+    height: 18px;
+    line-height: 18px;
+    margin-top: 7px;
+    font-size: 13px;
+    color: gray;
+}
+
+.name i {
+    margin-left: 20px;
+    color: gray;
+}
+
+.master {
+    width: 100%;
+    height: 150px;
+    padding: 20px 0px 20px 0px;
+    box-sizing: border-box;
+    border-bottom: 1px solid #e2e0f4;
+}
+
+.master::after {
+    content: "";
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 100%;
+    background-image: linear-gradient(0deg, transparent 50%, #e2e0f4 50%);
+}
+
+.master p {
+    display: block;
+    width: 100%;
+    height: 15px;
+    line-height: 15px;
+    font-weight: 700;
+    font-size: 13px;
+    color: #0C0C0C;
+    margin: 0px;
+}
+
+.master-main {
+    width: 100%;
+    height: 100px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+a {
+    display: block;
+    width: 50px;
+    height: auto;
+    cursor: pointer;
+}
+
+a img {
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+}
+
+a span {
+    display: block;
+    width: 100%;
+    height: 15px;
+    margin-top: 7px;
+    color: gray;
+    font-size: 12px;
+    line-height: 15px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.member {
+    width: 100%;
+    height: 230px;
+    padding: 20px 0px 0px 0px;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+.member p {
+    display: block;
+    width: 100%;
+    height: 15px;
+    line-height: 15px;
+    font-weight: 700;
+    font-size: 13px;
+    color: #0C0C0C;
+    margin: 0px;
+}
+
+.member ul {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+    margin: 0px;
+    padding: 0px;
+}
+
+.member ul li {
+    float: left;
+    display: block;
+    width: 50px;
+    height: 75px;
+    margin: 15px 18px 0px 18px;
+    position: relative;
+
+}
+
+.member ul li em {
+    display: block;
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background-color: #e7620f;
+    border-radius: 9px;
+    right: -2px;
+    top: -2px;
+    text-align: center;
+    line-height: 18px;
+    color: #ffffff;
+    font-style: normal;
+    font-size: 8px;
+    cursor: pointer;
+}
+
+.member-plus {
+    display: block;
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    border: 1px solid #dfd9d9;
+    font-size: 20px;
+    line-height: 25px;
+    text-align: center;
+    margin-top: 0px;
+}
+
+.member-plus i {
+    display: block;
+    width: 100%;
+    height: 100%;
+    line-height: 50px;
+    text-align: center;
+}
+
+.exit {
+    width: 100%;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+
+}
+
+.member-add {
+    width: 100%;
+    height: auto;
+    display: none;
+}
+
+.add-main {
+    width: 100%;
+    height: 410px;
+    overflow-y: auto;
+}
+
+.member-add p {
+    display: block;
+    width: 100%;
+    height: 50px;
+    line-height: 50px;
+    margin-top: 20px;
+    padding: 0px 20px 0px 20px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+input[type='checkbox'] {
+    display: block;
+    width: 22px;
+    height: 22px;
+    margin-top: 14px;
+    float: left;
+
+}
+
+.member-add p img {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    margin-left: 20px;
+    float: left;
+    display: block;
+    margin-top: 5px;
+}
+
+.member-add p span {
+    display: block;
+    height: 50px;
+    line-height: 50px;
+    max-width: 150px;
+    margin-left: 20px;
+    color: gray;
+    font-size: 14px;
+    float: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.top {
+    width: 100%;
+    height: 50px;
+    border-bottom: 1px solid #e2e0f4;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 50px;
+}
+
+.top::after {
+    content: "";
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 100%;
+    background-image: linear-gradient(0deg, transparent 50%, #e2e0f4 50%);
+}
+
+.save {
+    width: 100%;
+    height: 50px;
+    text-align: center;
+    line-height: 50px;
+    display: none;
+}

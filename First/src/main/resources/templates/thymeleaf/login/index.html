@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+<head th:replace="thymeleaf/common/fragment::head">
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+
+</style>
+<body>
+<nav th:replace="thymeleaf/common/fragment::top"></nav>
+<nav th:replace="thymeleaf/common/fragment::left"></nav>
+<div class="div-inner" id="div-inner">
+    <div class="div-inner-color">
+        <div class="layui-carousel carouse_picture" style="margin: auto" id="carousel">
+            <div carousel-item>
+                <div><img th:src="@{images/car1.jpg}" height="800px"></div>
+                <div><img th:src="@{images/car2.jpg}" height="800px"></div>
+                <div><img th:src="@{images/car3.jpg}" height="800px"></div>
+                <div><img th:src="@{images/car4.jpg}" height="800px"></div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+<script>
+    layui.use(['carousel', 'form'], function () {
+        var carousel = layui.carousel
+            , form = layui.form;
+        carousel.render({
+            elem: '#carousel'
+            , width: '1420px'
+            , height: '800px'
+            , interval: 5000
+
+        });
+    })
+</script>
+</body>
+</html>

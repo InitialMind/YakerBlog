@@ -1,0 +1,90 @@
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+
+}
+
+.div-outer {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 30px 10px 20px 20px;
+}
+
+.p {
+    margin: 10px 0px 10px 0px;
+    font-weight: bolder;
+}
+
+input[type="text"] {
+    width: 80%;
+    height: 35px;
+    border-radius: 3px;
+    border: 1px #0097f5 solid;
+    padding-left: 10px;
+    box-sizing: border-box;
+}
+
+input[type="password"] {
+    width: 80%;
+    height: 35px;
+    border-radius: 3px;
+    border: 1px #0097f5 solid;
+    padding-left: 10px;
+    box-sizing: border-box;
+}
+
+select {
+    width: 180px;
+    margin-right: 15px;
+    height: 30px;
+    border: 1px #58b0b5 solid;
+    border-radius: 5px;
+}
+
+label {
+    margin: 10px;
+}
+
+.a-radio {
+    display: none;
+}
+
+.b-radio {
+    display: inline-block;
+    border: 1px solid #ccc;
+    width: 16px;
+    height: 16px;
+    border-radius: 2px;
+    vertical-align: middle;
+    margin-right: 5px;
+    position: relative;
+}
+
+.b-radio:before {
+    content: '';
+    font-size: 0;
+    width: 10px;
+    height: 10px;
+    background: rgb(143, 188, 238);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-left: -5px;
+    margin-top: -5px;
+    border-radius: 2px;
+    display: none;
+}
+
+.a-radio:checked ~ .b-radio:before {
+    display: block;
+}
+
+.btn-div {
+    margin-top: 50px;
+    padding-left: 50px;
+    box-sizing: border-box;
+}
+

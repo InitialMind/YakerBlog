@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <link rel="stylesheet" href="../../../../static/css/chat_group_manager.css"
+          th:href="@{/css/chat_group_manager.css}">
+    <script src="../../../../static/layui/layui.js" th:src="@{/static/layui/layui.js}"></script>
+    <link rel="stylesheet" href="../../../../static/fontawesome/css/font-awesome.css"
+          th:href="@{/static/fontawesome/css/font-awesome.css}">
+    <script src="../../../../static/jq/jquery-3.1.1.js" th:src="@{/static/jq/jquery-3.1.1.js}"></script>
+    <link rel="stylesheet" href="../../../../static/layui/css/layui.css" th:src="@{/static/layui/css/layui.css}">
+
+</head>
+<body>
+<div class="out">
+    <div class="name">
+        <p>群名称</p>
+        <span th:text="${group?.nickName}"></span><i class="fa fa-pencil" th:if="${same} == Y"
+                                                     onclick="edit_name()"></i>
+    </div>
+    <div class="master">
+        <p>群主</p>
+        <div class="master-main">
+            <a>
+                <img th:src="${master?.icon}">
+                <span th:text="${master?.nickName}"></span>
+            </a>
+        </div>
+    </div>
+    <div class="member">
+        <p>群成员</p>
+        <ul>
+            <li th:if="${same} == Y"><a id="add-member">
+                <span class="member-plus"><i class="fa fa-plus fa-2x"></i></span>
+                <span>添加成员</span>
+            </a></li>
+            <li th:each="user:${group?.getGroupUser()}" th:id="'user_'+${user?.userId}"><a
+                    th:onclick="'member_detail('+${user?.userId}+')'">
+                <img th:src="${user?.icon}">
+                <span th:text="${user?.nickName}"></span>
+            </a><em th:if="${same} == Y" th:onclick="'del_member('+${user?.userId}+')'">—</em></li>
+        </ul>
+    </div>
+    <div class="exit">
+        <input type="button" th:if="${same} == N" value="退出此群" class="layui-btn layui-btn-danger">
+        <input type="button" th:if="${same} == Y" value="解散此群" class="layui-btn layui-btn-danger">
+    </div>
+    <div class="member-add">
+        <div class="top">选择联系人</div>
+        <div class="add-main">
+            <p th:each="fans:${fans}"><input type="checkbox" name="add" th:value="${fans?.userId}"><img
+                    th:src="${fans?.icon}"><span th:text="${fans?.nickName}"></span></p>
+        </div>
+    </div>
+    <div class="save">
+        <input type="button" value="确定" class="layui-btn layui-btn-normal">
+    </div>
+</div>
+<script th:inline="javascript">
+    var group_name = [[${group?.nickName}]];
+    var index = parent.layer.getFrameIndex(window.name);
+    $('body').on('blur', '.name input', function (e) {
+        var name = $(".name input[type='text']").val();
+        if (name == '' || name.length > 10) {
+            name = group_name;
+        }
+        else if (group_name != name) {
+            $.ajax({
+                cache: false,
+                async: false,
+                type: 'post',
+                url: '/customer/chat/group_manager/change_name',
+                data: {
+                    'groupId': [[${group?.groupId}]],
+                    'name': name,
+                },
+                success: function (data) {
+                    if (data == true) {
+                        group_name = name;
+                        $(".name").html("<p>群名称</p><span>" + name + "</span><i class=\"fa fa-pencil\" onclick=\"edit_name()\"></i>");
+                    }
+                }
+            })
+        }
+
+
+    })
+
+    function edit_name() {
+        var name = $(".name span").text();
+        $(".name").html("<p>群名称</p><input type='text' placeholder='请输入群名称' value='" + name + "'>");
+    }
+
+    function del_member(id) {
+        $.ajax({
+            cache: false,
+            async: false,
+            type: 'post',
+            url: '/customer/chat/group_manager/del_member',
+            data: {
+                'userId': id,
+                'groupId': [[${group?.groupId}]],
+            },
+            success: function (data) {
+                if (data == true) {
+                    $("#user_" + id).remove();
+                }
+            }
+        })
+    }
+
+    $(".exit input[type='button']").click(function () {
+        $.ajax({
+            cache: false,
+            async: false,
+            type: 'post',
+            url: '/customer/chat/group_manager/exit',
+            data: {
+                'groupId': [[${group?.groupId}]],
+            },
+            success: function (data) {
+                if (data == true) {
+                    parent.location.reload();
+                }
+            }
+        })
+    })
+    $("#add-member").click(function () {
+        $(".member").hide();
+        $(".master").hide();
+        $(".name").hide();
+        $(".exit").hide();
+        $('.member-add').show();
+        $('.save').show();
+
+    })
+    $(".save input[type='button']").click(function () {
+        var res = '';
+        $("input[type='checkbox']:checked").each(function () {
+            res += $(this).val() + ' ';
+            ;
+        });
+        if (res != '') {
+            $.ajax({
+                cache: false,
+                async: false,
+                type: 'post',
+                url: '/customer/chat/group_manager/add',
+                data: {
+                    'groupId': [[${group?.groupId}]],
+                    'list': res.substr(0, res.length - 1),
+                },
+                success: function (data) {
+                    parent.layer.close(index);
+                }
+            });
+        }
+        else {
+            parent.layer.close(index);
+        }
+
+    })
+
+    function member_detail(id) {
+        parent.window.location.href = '/customer/detail/personal?id=' + id;
+    }
+</script>
+</body>
+</html>

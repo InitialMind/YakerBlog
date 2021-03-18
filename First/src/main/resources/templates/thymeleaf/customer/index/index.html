@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head">
+    <meta charset="UTF-8">
+    <title>雅客论坛</title>
+    <link rel="stylesheet" href="../../../../static/css/customer_index.css">
+    <script src="../../../../static/jq/jquery-3.1.1.js" th:src="@{/jq/jquery-3.1.1.js}"></script>
+    <script src="../../../../static/layui/layui.js" th:src="@{/layui/layui.js}"></script>
+    <link th:href="@{/static/layui/css/layui.css}" rel="stylesheet" type="text/css" media="all"/>
+    <link rel="stylesheet" href="../../../../static/fontawesome/css/font-awesome.css"
+          th:href="@{/static/fontawesome/css/font-awesome.css}">
+    <script src="../../../../static/js/customer/index.js" th:src="@{/js/customer/index.js}"></script>
+    <script type="text/javascript" th:src="@{/static/js/distpicker.data.js}"></script>
+    <script type="text/javascript" th:src="@{/static/js/distpicker.js}"></script>
+</head>
+<body>
+<div th:fragment="top-div" class="top-div">
+    <div class="top-div-main">
+        <div class="logo">
+            <span> <a href="/customer/index">Yaker</a></span>
+        </div>
+        <div class="search-div">
+            <input type="text">
+            <i class="fa fa-search"></i>
+        </div>
+        <div class="top-menu">
+            <div>
+                <ul>
+                    <li>
+                        <a id="home" href="/customer/index"> <em class="fa fa-home"
+                                                                 style="font-size: 30px;"></em><em>首页</em></a>
+                    </li>
+                    <li>
+                        <a th:href="@{/customer/detail/personal}+'?id='+${user?.userId}"><em class="fa fa-user-circle-o"
+                                                                                             style="font-size: 25px;"></em><em
+                                th:text="${user?.nickName}"></em></a>
+                    </li>
+                    <li>
+                        <a href="/customer/detail/article/pub"><em class="fa fa-pencil-square-o"
+                                                                   style="font-size: 25px;padding-top: 2px;box-sizing: border-box"></em><em>写帖子</em></a>
+                    </li>
+                    <li>
+                        <i th:text="${informs}"></i>
+                        <a th:onclick="'inform('+${user?.userId}+')'"> <em class="fa fa-envelope-o"
+                                                                           style="font-size: 30px;"></em><em>通知</em>
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+        <div class="top-quit">
+            <a href="/customer/login"> <em class="fa fa-close" style="font-size: 30px;"></em><em>注销</em></a>
+        </div>
+    </div>
+</div>
+<div th:fragment="background" class="background"></div>
+<div class="main-div">
+
+    <div th:fragment="menu-div" class="my-menu-div">
+        <div class="menu-div-child">
+            <a><em class="fa fa-home"></em><span>首页</span></a>
+        </div>
+        <hr>
+        <div class="menu-div-child" onclick="focusArticle()">
+            <a><em class="fa fa-heart-o"></em><span>我关注的人</span></a>
+        </div>
+        <div class="menu-div-child" onclick="admireArticle()">
+            <a><em class="fa fa-thumbs-o-up"></em><span>我赞过的</span></a>
+        </div>
+        <div class="menu-div-child" onclick="commentArticle()">
+            <a><em class="fa fa-commenting-o"></em><span>我评论过的</span></a>
+        </div>
+
+        <hr>
+        <div class="menu-div-child">
+            <a><em class="fa fa-fire"></em><span>热门帖子</span></a>
+        </div>
+        <hr>
+        <div th:each="category:${categorys}" th:onclick="'javascript:categoryIndex('+${category.categoryId}+')'"
+             class="menu-div-child">
+            <a><em class="fa fa-circle"></em><span th:text="${category.categoryName}"></span></a>
+        </div>
+        <hr>
+    </div>
+    <div class="inner-div" id="inner"></div>
+    <div th:fragment="mes-div" class="mes-div">
+        <div class="mes-div-main">
+            <div class="mes-div-main-icon">
+                <a><img th:src="${user?.icon}"></a>
+            </div>
+            <div class="mes-div-main-fans">
+                <div>
+                    <a th:text="${user?.nickName}"></a>
+                    <a><span th:text="'Lv'+${user?.userLevel}"></span></a>
+                </div>
+                <ul>
+                    <li>
+                        <a><strong th:text="${user?.focusCount}"></strong>
+                            <span>关注</span></a>
+                    </li>
+                    <li style="border-right: 1px solid #cccccc;border-left: 1px solid #cccccc;">
+                        <a><strong th:text="${user?.fansCount}"></strong>
+                            <span>粉丝</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a><strong th:text="${user?.articleCount}"></strong>
+                            <span>帖子</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="mes-div-notice">
+            <span style="font-weight: bolder;font-size: 14px;text-align: center;display: block;width: 100%;margin-top: 10px;cursor: pointer;"
+                  onclick="noticeIndex()">公告栏</span>
+            <hr class="layui-bg-gray">
+            <div th:each="notice:${notices}" th:onclick="'detailNotice('+${notice?.noticeId+')'}">
+                <a>
+                    <span th:text="${notice.title}"></span>
+                    <span th:text="${#dates.format(notice.createTime,'yy-MM-dd hh:mm')}"
+                          style="text-align: right"></span></a>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    layui.use('flow', function () {
+        var $ = layui.jquery; //不用额外加载jQuery，flow模块本身是有依赖jQuery的，直接用即可。
+        var flow = layui.flow;
+        flow.load({
+            elem: '#inner' //指定列表容器
+            , isAuto: true
+            , done: function (page, next) { //到达临界点（默认滚动触发），触发下一页
+                var lis = [];
+                //以jQuery的Ajax请求为例，请求下一页数据（注意：page是从2开始返回）
+                var param = location.search.substring(1, location.search.length);
+                $.get('/customer/index/api/list?page=' + page + '&&' + param, function (res) {
+                    //假设你的列表返回在data集合中
+                    var result = JSON.parse(res);
+                    layui.each(result.data, function (index, item) {
+                        lis.push("<div class='article-div'><div style='overflow: hidden'><div class='icon'><a href='#'><img src='" + item.icon + "'" +
+                            " onclick='detailUser(" + item.userId + ")' class='article-div-img' ></a></div>" +
+                            "<div class='nickName'><span><a onclick='detailUser(" + item.userId + ")'>" + item.nickName + "</a></span><p style='margin-top: 8px;'>" + item.createTime + "</p></div></div>" +
+                            "<div class='title' onclick='articleDetail(" + item.ID + ")'><p >" + item.title + "</p><span>" + item.category + "</span></div></div>");
+                    });
+
+                    //执行下一页渲染，第二参数为：满足“加载更多”的条件，即后面仍有分页
+                    //pages为Ajax返回的总页数，只有当前页小于总页数的情况下，才会继续出现加载更多
+                    next(lis.join(''), page < result.pages);//next('列表HTML片段', page < res.pages);
+                });
+            }
+        });
+    });
+    $("#home")[0].style.setProperty('color', '#ff8527');
+</script>
+</body>
+</html>

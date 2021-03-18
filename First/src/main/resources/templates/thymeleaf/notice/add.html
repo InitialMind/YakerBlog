@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link th:href="@{/css/article_manager.css}" rel="stylesheet" type="text/css" media="all"/>
+    <script type="text/javascript" th:src="@{/static/jq/jquery-3.1.1.js}"></script>
+    <link th:href="@{/static/layui/css/layui.css}" rel="stylesheet" type="text/css" media="all"/>
+    <script type="text/javascript" th:src="@{/static/layui/layui.js}"></script>
+
+</head>
+<body>
+<div style="padding:10px 20px 10px 20px;box-sizing: border-box;">
+    <p>公告标题:</p>
+    <input type="text" th:value="${data?.title}" th:name="title" placeholder="输入标题..." class="title">
+    <p>公告内容:</p>
+    <div class="content">
+        <textarea th:name="content" id="LAY_edit" class="layui-textarea"></textarea>
+    </div>
+    <div style="margin-top: 20px">
+        <input type="button" th:value="发布" id="btn_y" class="layui-btn layui-btn-normal "
+               style="width: 45%;border-radius: 19px">
+        <input type="button" th:value="取消" id="btn_n" class="layui-btn layui-btn-warm "
+               style="width: 45%;border-radius: 19px">
+    </div>
+</div>
+<script>
+    var res;
+    var index = parent.layer.getFrameIndex(window.name);
+    $("#LAY_edit").html([[${article?.content}]]);
+    layui.use('laydate', function () {
+        var laydate = layui.laydate;
+        laydate.render({
+            elem: '#date'
+            , type: 'datetime'
+        });
+    })
+
+    layui.use('layedit', function () {
+        var layedit = layui.layedit
+            , $ = layui.jquery;
+        layedit.set({
+            uploadImage: {
+                url: '/upload/image'
+                , type: 'POST'
+                ,
+            }
+        })
+
+        var index = layedit.build('LAY_edit');
+
+    })
+    $("#btn_y").click(function () {
+
+        var title = $("input[name='title']").val();
+        var content = $(window.frames["LAY_layedit_1"].document).find('body').text();
+        var pat2 = new RegExp("^[0-9]+$")
+        if (getLength(title) == 0 || getLength(title) > 50) {
+            layer.msg("标题长度在1-50个字符之间,中文算两个字符");
+        }
+
+        else if (getLength(content) == 0 || getLength(content) > 1000) {
+            layer.msg("文章内容长度在1000个字符之内,中文算两个字符");
+        }
+        else {
+            $.ajax({
+                url: "/notice/add_main",
+                type: "post",
+                async: false,
+                cache: false,
+                data: {
+                    'title': title,
+                    'content': $(window.frames["LAY_layedit_1"].document).find('body').html()
+                },
+                success: function (data) {
+                    res = data;
+                    layer.msg("添加成功", {icon: 1});
+                    parent.layer.close(index);
+                }
+
+            })
+        }
+
+    })
+    $("#btn_n").click(function () {
+        parent.layer.close(index);
+    })
+
+    function getLength(str) {
+        var len = 0;
+        for (var i = 0; i < str.length; i++) {
+            if (str.charCodeAt(i) > 127 || str.charCodeAt(i) == 94) {
+                len += 2;
+            } else {
+                len++;
+            }
+        }
+        return len;
+    }
+</script>
+</body>
+</html>

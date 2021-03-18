@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="thymeleaf/common/fragment::head">
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+</head>
+<body>
+<link th:href="@{/css/experience_index.css}" rel="stylesheet" type="text/css" media="all"/>
+<nav th:replace="thymeleaf/common/fragment::top"></nav>
+<nav th:replace="thymeleaf/common/fragment::left"></nav>
+<div class="div-inner" id="div-inner">
+    <div class="div-inner-color">
+        <fieldset class="layui-elem-field ">
+            <legend>等级经验设置</legend>
+            <div class="layui-field-box" style="min-height: 300px;padding:20px 50px 10px 50px;box-sizing: border-box;">
+                <p>等级: </p>
+                <select id="select">
+                    <option th:each="experience:${list}" th:text="${experience?.level}"></option>
+                </select>
+
+                <p>经验: </p> <input type="text" id="experience">
+                <div style="margin-top: 25px">
+                    <input type="button" th:value="保存" id="save" class="layui-btn layui-btn-normal "
+                           style="width: 25%;border-radius: 19px;">
+                </div>
+            </div>
+        </fieldset>
+        <hr class="layui-bg-red" style="margin: 50px 0px 50px 0px;">
+        <fieldset class="layui-elem-field ">
+            <legend>行为经验设置</legend>
+            <div class="layui-field-box" style="min-height: 300px;padding:20px 50px 10px 50px;box-sizing: border-box;">
+                <p>点赞经验: </p>
+                <input type="text" id="admire">
+                <p>评论经验: </p>
+                <input type="text" id="comment">
+                <div style="margin-top: 25px">
+                    <input type="button" th:value="保存" id="save_action" class="layui-btn layui-btn-normal "
+                           style="width: 25%;border-radius: 19px;">
+                </div>
+            </div>
+        </fieldset>
+
+    </div>
+</div>
+<script th:inline="javascript">
+    var data = JSON.parse([[${data}]]);
+    $("#experience").val(data["Lv2"]);
+    var action = JSON.parse([[${action}]]);
+    $("#admire").val(action["admire"]);
+    $("#comment").val(action["comment"]);
+
+    var pat1 = new RegExp("^[0-9]+$")
+    var previous;
+    var preLv;
+    layui.use('layer', function () { //独立版的layer无需执行这一句
+        var $ = layui.jquery, layer = layui.layer;
+        $("#select").on('focus', function () {
+            previous = this.value;
+        }).change(function () {
+            data["Lv" + previous] = $("#experience").val();
+            var level = "Lv" + this.value;
+            $("#experience").val(data[level]);
+            previous = this.value;
+        });
+        $("#save").click(function () {
+            data["Lv" + $("#select").val()] = $("#experience").val();
+            var res = true;
+            for (var i = 2; i <= getJsonLength(data) + 1; i++) {
+
+                var item = "Lv" + i.toString();
+
+                if (!pat1.test(data[item])) {
+                    layer.msg("经验必须是正整数");
+                    res = false;
+                    break;
+                }
+                else if (item == "Lv2") {
+                    preLv = item;
+                }
+                else if (data[item] <= data[preLv]) {
+                    layer.msg(item + "的经验值必须比" + preLv + "高");
+                    res = false;
+                    break;
+                }
+                else {
+                    preLv = item;
+                }
+            }
+            if (res == true) {
+                $.ajax({
+                    url: '/experience/level',
+                    type: 'post',
+                    async: false,
+                    cache: false,
+                    data: {
+                        'data': JSON.stringify(data)
+                    },
+                    success: function (data) {
+                        layer.msg("保存成功", {icon: 1});
+                    }
+                })
+            }
+        })
+        $("#save_action").click(function () {
+            action["admire"] = $("#admire").val();
+            action["comment"] = $("#comment").val();
+            var res = true;
+            var admire = action["admire"];
+            var comment = action["comment"];
+            if (!pat1.test(admire) && admire >= 0) {
+                res = false;
+                layer.msg("点赞经验必须是正整数");
+            }
+            else if (!pat1.test(comment)) {
+                res = false;
+                layer.msg("评论经验必须是正整数");
+            }
+            else if (res == true) {
+                $.ajax({
+                    url: "/experience/action",
+                    type: "post",
+                    async: false,
+                    cache: false,
+                    data: {
+                        'data': JSON.stringify(action)
+                    },
+                    success: function (data) {
+                        layer.msg("保存成功", {icon: 1});
+                    }
+                })
+            }
+        })
+    })
+    $("#experience").keyup(function () {
+        var c = $(this);
+        if (/[^\d]/.test(c.val())) {//替换非数字字符
+            var temp_amount = c.val().replace(/[^\d]/g, '');
+            $(this).val(temp_amount);
+        }
+        if (this.value.length >= 2 && c.val()[0] == 0) {
+            $(this).val(c.val().substring(1));
+        }
+
+    })
+    $("#admire").keyup(function () {
+        var c = $(this);
+        if (/[^\d]/.test(c.val())) {//替换非数字字符
+            var temp_amount = c.val().replace(/[^\d]/g, '');
+            $(this).val(temp_amount);
+        }
+
+        if (this.value.length >= 2 && c.val()[0] == 0) {
+            $(this).val(c.val().substring(1));
+        }
+    })
+    $("#comment").keyup(function () {
+        var c = $(this);
+        if (/[^\d]/.test(c.val())) {//替换非数字字符
+            var temp_amount = c.val().replace(/[^\d]/g, '');
+            $(this).val(temp_amount);
+        }
+        if (this.value.length >= 2 && c.val()[0] == 0) {
+            $(this).val(c.val().substring(1));
+        }
+    })
+
+    function getJsonLength(data) {
+        var len = 0;
+        for (var item in data) {
+            len++;
+        }
+        return len;
+
+    }
+
+
+    a_change('l3', 'i3', 'a3');// 菜单目录样式变化
+
+
+</script>
+</body>
+</html>

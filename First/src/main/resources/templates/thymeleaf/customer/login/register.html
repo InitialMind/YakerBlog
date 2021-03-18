@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>雅客论坛</title>
+    <!--<link rel="stylesheet" href="../../../../static/css/customer_login.css" th:href="@{/css/customer_login.css}">-->
+    <script src="../../../../static/jq/jquery-3.1.1.js" th:src="@{/jq/jquery-3.1.1.js}"></script>
+    <link rel="stylesheet" href="../../../../static/css/style.css" th:href="@{/css/style.css}">
+    <script src="../../../../static/layui/layer/layer.js" th:src="@{/layui/layer/layer.js}"></script>
+    <link rel="stylesheet" href="../../../../static/fontawesome/css/font-awesome.css"
+          th:href="@{/static/fontawesome/css/font-awesome.css}">
+</head>
+<body>
+<form th:action="@{/customer/register/index}" th:method="post" onsubmit="return verify()">
+    <!--SIGN UP-->
+
+    <div class="danger" th:if="${param.error}"><i class="fa fa-warning "></i><span
+            class="bg-danger">账号已存在!</span></div>
+    <div class="login-form">
+        <div class="head-info">
+            <label class="lbl-1"> </label>
+            <label class="lbl-2"> </label>
+            <label class="lbl-3"> </label>
+        </div>
+        <div class="clear"></div>
+
+        <form>
+            <input type="text" th:name="username" class="text" placeholder="UserName">
+            <input type="password" th:name="password" placeholder="PassWord" style="margin-bottom: 0px">
+            <div>
+                <input type="password" th:name="password_t" placeholder="Check PassWord">
+
+            </div>
+
+        </form>
+        <div class="signin">
+            <input type="submit" value="Register">
+        </div>
+    </div>
+</form>
+</body>
+<script th:inline="javascript">
+
+
+
+
+    function verify() {
+        var username = $("input[name='username']").val();
+        var password = $("input[name='password']").val();
+        var checkPwd = $("input[name='password_t']").val();
+        var pat1 = new RegExp("^[0-9a-zA-Z]{5,11}$");
+        if (!pat1.test(username)) {
+            layer.msg("用户名长度在5-11个字符之间,只能是字母或数字");
+            return false;
+        }
+        else if (password.length < 6 || !noBlank(password) || password.length > 16) {
+            layer.msg("密码长度在6-16个字符之间且不能含空格");
+            return false;
+        }
+        else if (checkPwd != password) {
+            layer.msg("两次输入的密码不一致");
+            return false;
+        }
+        return true;
+    }
+
+    function noBlank(c) {
+        for (i = 0; i < c.length; i++) {
+            if (c[i] == " ") {
+                return false;
+            }
+        }
+        return true;
+    }
+</script>
+</html>

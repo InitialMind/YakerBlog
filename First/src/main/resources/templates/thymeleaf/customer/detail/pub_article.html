@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="thymeleaf/customer/index/index::head">
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<link rel="stylesheet" href="../../../../static/css/detail_pub_article.css" th:href="@{/css/detail_pub_article.css}">
+<div th:replace="thymeleaf/customer/index/index::top-div"></div>
+<div th:replace="thymeleaf/customer/index/index::background"></div>
+<div class="main-div" style=" background-color: rgba(0,0,0,0);padding-top: 20px;">
+    <div class="pub-title">
+        <div class="pub-title-left"><input type="text" id="title" placeholder="请输入帖子标题"></div>
+        <div class="pub-title-right"><input type="button" class="layui-btn layui-btn-warm" id="publish" value="发布帖子">
+        </div>
+    </div>
+    <div style="display: none" id="category"><select id="cat">
+        <option th:each="category:${categorys}" th:text="${category.categoryName}"></option>
+    </select></div>
+    <div class="main-pub">
+        <textarea id="LAY_edit"></textarea>
+    </div>
+</div>
+<script th:inline="javascript">
+    layui.use('layedit', function () {
+        var layedit = layui.layedit
+            , $ = layui.jquery;
+        layedit.set({
+            uploadImage: {
+                url: '/upload/image'
+                , type: 'POST'
+                ,
+            }
+        })
+
+        var index = layedit.build('LAY_edit', {
+            height: '800px',
+        });
+    })
+    $("#publish").click(function () {
+        var title = $("#title").val();
+        var html = $(window.frames["LAY_layedit_1"].document).find('body').html();
+        var content = $(window.frames["LAY_layedit_1"].document).find('body').text();
+        if (getLength(title) > 50 || getLength(title) == 0) {
+            layer.msg("标题长度在50个字符(25个文字)以内");
+        }
+        else if (getLength(html) == "" || getLength(content) > 1000) {
+            layer.msg("帖子内容在1000个字符(500个文字)以内");
+        }
+        else {
+            var cont = "<div class='category'><div class='category-left'>帖子分类:</div><div class='category-right'>" + $("#category").html() + "</div></div>";
+            layer.open({
+                title: '发布帖子',
+                btn: ['发布帖子'],
+                content: cont,
+                number: 1,
+                area: ['350px', '200px'],
+                yes: function (index) {
+                    $.ajax({
+                        cache: false,
+                        async: false,
+                        type: 'post',
+                        url: '/customer/detail/article/pub_main',
+                        data: {
+                            'content': html,
+                            'title': title,
+                            'category': $("#cat option:selected").val(),
+                        },
+                        success: function (data) {
+                            if (data != null) {
+                                window.location.href = "http://localhost:8080/customer/detail/article?id=" + parseInt(data);
+                            }
+                            else {
+                                layer.msg("发布失败,请重试", {icon: 2});
+                            }
+                        }
+                    })
+
+                }
+            });
+
+        }
+    })
+</script>
+</body>
+</html>

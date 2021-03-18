@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="thymeleaf/customer/index/index::head">
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+</head>
+<body>
+<link rel="stylesheet" href="../../../../static/css/detail_notice_index.css" th:href="@{/css/detail_notice_index.css}">
+<div th:replace="thymeleaf/customer/index/index::top-div"></div>
+<div th:replace="thymeleaf/customer/index/index::background"></div>
+<div class="main-div">
+    <div class="top-tip">公告栏</div>
+    <div class="div-main" id="main">
+
+    </div>
+</div>
+<script th:inline="javascript">
+    layui.use('flow', function () {
+        var $ = layui.jquery; //不用额外加载jQuery，flow模块本身是有依赖jQuery的，直接用即可。
+        var flow = layui.flow;
+        flow.load({
+            elem: '#main' //指定列表容器
+            , isAuto: true
+            , done: function (page, next) { //到达临界点（默认滚动触发），触发下一页
+                var lis = [];
+                //以jQuery的Ajax请求为例，请求下一页数据（注意：page是从2开始返回）
+                $.get('/customer/detail/notice/data?page=' + page, function (res) {
+                    //假设你的列表返回在data集合中
+                    var result = JSON.parse(res);
+                    console.log(result);
+                    layui.each(result.data, function (index, item) {
+                        lis.push(" <div class=\"div-main-child\" onclick='detailNotice(" + item.id + ")'>" +
+                            "<div class=\"div-main-child-top\">" + item.title + "</div>" +
+                            "<div class=\"div-main-child-bottom\">" + item.content + "</div>" +
+                            "<div style='text-align: center;font-size: 12px;color: gray;line-height: 23px'>" + item.time + "</div>" +
+                            "</div>");
+                    });
+
+                    //执行下一页渲染，第二参数为：满足“加载更多”的条件，即后面仍有分页
+                    //pages为Ajax返回的总页数，只有当前页小于总页数的情况下，才会继续出现加载更多
+                    next(lis.join(''), page < result.pages);//next('列表HTML片段', page < res.pages);
+                });
+            }
+        });
+    });
+
+</script>
+</body>
+</html>

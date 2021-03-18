@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" th:src="@{/static/jq/jquery-3.1.1.js}"></script>
+    <link th:href="@{/static/layui/css/layui.css}" rel="stylesheet" type="text/css" media="all"/>
+    <script type="text/javascript" th:src="@{/static/layui/layui.js}"></script>
+    <link th:href="@{/static/css/common_edit.css}" rel="stylesheet" type="text/css" media="all"/>
+    <script type="text/javascript" th:src="@{/static/js/distpicker.data.js}"></script>
+    <script type="text/javascript" th:src="@{/static/js/distpicker.js}"></script>
+
+</head>
+<body>
+<div class="div-outer">
+
+    <p class="p">用户名:</p><input type="text" th:name="username" th:value="${user?.username}">
+    <p class="p">昵称:</p><input type="text" th:name="nickName" th:value="${user?.nickName}">
+    <p class="p">密码:</p><input type="password" th:name="password" th:value="${user?.userPwd}">
+    <p class="p">确认密码:</p><input type="password" th:name="tpassword" th:value="${user?.userPwd}">
+    <p class="p">地址:</p>
+    <div id="distpicker">
+        <select id="province"> </select>
+        <select id="city"> </select>
+    </div>
+    <p class="p">出生日期:</p>
+    <input type="text" id="date" th:value="${#dates.format(user?.birthday,'yyyy-MM-dd')}">
+    <p class="p">性别:</p>
+    <label>
+        <input type="radio" name="sex" value="男" th:checked="${user?.userSex} == 男" class="a-radio">
+        <span class="b-radio"></span>男
+    </label>
+    <label>
+        <input type="radio" name="sex" value="女" th:checked="${user?.userSex} == 女" class="a-radio">
+        <span class="b-radio"></span>女
+    </label>
+    <div class="btn-div">
+        <input type="button" value="确定" class="layui-btn layui-btn-normal" id="btn_yes">
+        <input type="button" value="取消" class="layui-btn layui-btn-danger" style="margin-left: 50px" id="btn_no">
+
+    </div>
+</div>
+<script th:inline="javascript">
+    var id = [[${user?.userId}]]
+    var province = [[${user?.province}]];
+    var city = [[${user?.city}]];
+    var action = [[${action}]]
+    var res;
+    var index = parent.layer.getFrameIndex(window.name);
+    layui.use('laydate', function () {
+        var laydate = layui.laydate;
+        laydate.render({
+            elem: '#date',
+            max: 0
+        });
+    })
+    $("#distpicker").distpicker({
+        province: province,
+        city: city,
+
+    });
+    $("#btn_yes").click(function () {
+        var username = $("input[name='username']").val();
+        var password = $("input[name='password']").val();
+        var tpassword = $("input[name='tpassword']").val();
+        var nickName = $("input[name='nickName']").val();
+        var province = $("#province").val();
+        var city = $("#city").val();
+        var birthday = $("#date").val();
+        var sex = $("input[name='sex']:checked").val();
+        var DATE_FORMAT = /^[0-9]{4}-[0-1]?[0-9]{1}-[0-3]?[0-9]{1}$/;
+        var pat1 = new RegExp("^[a-zA-Z0-9]{5,11}$");
+        var pat2 = new RegExp("^[^\\s]{6,16}$");
+        var pat3 = new RegExp("^[A-Za-z0-9\u4e00-\u9fa5]{1,11}$")
+        if (!pat1.test(username)) {
+            parent.layer.msg("只能含数字,字母并且长度在5-11之间");
+        }
+        else if (!pat3.test(nickName)) {
+            parent.layer.msg("昵称只能含数字、字母、汉字且长度在1-11之间");
+        }
+        else if (!pat2.test(password)) {
+            parent.layer.msg("不能含空格并且长度在6-16之间");
+        }
+        else if (password != tpassword) {
+            parent.layer.msg("两次密码不一致");
+        }
+        else if (province == "" || city == "") {
+            parent.layer.msg("请选择地址");
+        }
+        else if (!DATE_FORMAT.test(birthday)) {
+            parent.layer.msg("日期格式不正确");
+        }
+        else if (sex == null) {
+            parent.layer.msg("请选择性别");
+        }
+        else {
+            $.ajax({
+                url: '/user/common/name',
+                async: false,
+                cache: false,
+                type: 'post',
+                data: {
+                    'name': username,
+                    'nickName': nickName,
+                    'id': id
+                },
+                success: function (data) {
+                    if (data == true) {
+                        $.ajax({
+                            url: '/user/common/mod',
+                            async: false,
+                            cache: false,
+                            type: 'post',
+                            data: {
+                                'userId': id,
+                                'userName': username,
+                                'userPwd': password,
+                                'userSex': sex,
+                                'birthday': birthday,
+                                'province': province,
+                                'city': city,
+                                'nickName': nickName,
+                                'action': action,
+                                'pageNum': window.parent.getPageNum(),
+                            },
+                            success: function (data) {
+                                var newdata = JSON.parse(data);
+                                res = newdata;
+                                parent.layer.close(index);
+                                if (newdata.action == "edit") {
+                                    parent.layer.msg("修改成功", {icon: 1});
+                                }
+                                else {
+                                    parent.layer.msg("添加成功", {icon: 1});
+                                }
+                            }
+                        })
+
+                    }
+                    else {
+                        parent.layer.msg("用户名或昵称已存在");
+                    }
+
+                }
+            })
+        }
+
+    })
+    $("#btn_no").click(function () {
+        parent.layer.close(index);
+    })
+
+</script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+server:
+  port: 8080
+  tomcat:
+    uri-encoding: UTF-8
+
+spring:
+  profiles:
+    active: prod
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/first?useSSL=false
+    username: root
+    password: 123456
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+#  freemarker:
+#    template-loader-path: classpath:/templates
+#    cache: false
+#    charset: utf-8
+#    check-template-location: true
+#    content-type: text/html
+#    expose-request-attributes: true
+#    expose-session-attributes: true
+#    request-context-attribute: request
+#    suffix: .ftl
+
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    servlet:
+      content-type: text/html
+    cache: false
+  mvc:
+    static-path-pattern: /static/**
+  devtools:
+    restart:
+      enabled: true
+      additional-paths: src/main/java
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+

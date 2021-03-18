@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="thymeleaf/customer/index/index::head">
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<link rel="stylesheet" href="../../../../static/css/detail_inform.css" th:href="@{/css/detail_inform.css}">
+<div th:replace="thymeleaf/customer/index/index::top-div"></div>
+<div th:replace="thymeleaf/customer/index/index::background"></div>
+<div class="main-div">
+    <div class="my-menu-div" style="padding-top: 50px;">
+        <div class="menu-div-child" id="comment">
+            <a><em class="fa fa-circle"></em><span>评论</span></a><i class="unRead" th:if="${comments} != 0"
+                                                                   th:text="${comments}"></i>
+        </div>
+        <div class="menu-div-child" id="reply">
+            <a><em class="fa fa-circle"></em><span>回复</span></a><i class="unRead" th:if="${replys} != 0"
+                                                                   th:text="${replys}"></i>
+        </div>
+        <div class="menu-div-child" id="admire">
+            <a><em class="fa fa-circle"></em><span>点赞</span></a><i class="unRead" th:if="${admires} != 0"
+                                                                   th:text="${admires}"></i>
+        </div>
+        <div class="menu-div-child" id="chat">
+            <a><em class="fa fa-circle"></em><span>私信</span></a><i class="unRead" th:if="${chats} != 0"
+                                                                   th:text="${chats}"></i>
+        </div>
+    </div>
+    <div class="inner-div" style="width: 850px;">
+        <div class="top-tip">收到的评论</div>
+        <div class="main" id="main">
+
+        </div>
+    </div>
+</div>
+<script th:inline="javascript">
+    $(document).ready(function () {
+        $("#comment").css('backgroundColor', '#9adedf');
+        $("#comment em").attr('class', 'fa fa-check');
+        api("comment");
+    });
+    $(".menu-div-child").click(function (e) {
+        var obj = e.currentTarget;
+        $(".menu-div-child").css('backgroundColor', '');
+        $(".menu-div-child em").attr('class', 'fa fa-circle');
+        $("#" + $(obj).attr("id") + " em").attr('class', 'fa fa-check');
+        $(obj).css('backgroundColor', '#9adedf');
+        if ($(obj).attr("id") == "comment") {
+            $(".top-tip").text("收到的评论");
+        }
+        else if ($(obj).attr("id") == "reply") {
+            $(".top-tip").text("收到的回复");
+        } else if ($(obj).attr("id") == "admire") {
+            $(".top-tip").text("收到的点赞");
+        } else if ($(obj).attr("id") == "chat") {
+            window.location.href = "/customer/chat/index";
+        }
+        api($(obj).attr("id"));
+    })
+
+    function api(action) {
+        $("#main").remove();
+        $(".inner-div").append("<div class='main' id='main'></div>")
+        layui.use('flow', function () {
+            var $ = layui.jquery; //不用额外加载jQuery，flow模块本身是有依赖jQuery的，直接用即可。
+            var flow = layui.flow;
+            flow.load({
+                elem: '#main' //指定列表容器
+                , isAuto: true
+                , done: function (page, next) { //到达临界点（默认滚动触发），触发下一页
+                    var lis = [];
+                    //以jQuery的Ajax请求为例，请求下一页数据（注意：page是从2开始返回）
+                    $.get('/customer/detail/inform/list?page=' + page + '&&action=' + action, function (res) {
+                        //假设你的列表返回在data集合中
+                        var result = JSON.parse(res);
+                        console.log(result);
+                        if (action == "comment") {
+                            layui.each(result.data, function (index, item) {
+                                lis.push("<div class=\"main-child\">\n" +
+                                    "              <div class=\"child-left\"><img src=" + item.icon + " onclick='detailUser(" + item.userId + ")'></div>\n" +
+                                    "              <div class=\"child-right\">\n" +
+                                    "                  <div class=\"child-right-top\">\n" +
+                                    "                      <p onclick='detailUser(" + item.userId + ")'>" + item.nickName + "</p>\n" +
+                                    "                      <span>" + item.time + "</span>\n" +
+                                    "                  </div>\n" +
+                                    "                  <div class=\"child-right-content\">" + item.content + "</div>\n" +
+                                    "                  <div class=\"child-right-aim\" onclick='articleDetail(" + item.aimId + ")'><span style=\"color: gray !important;\">评论了我的帖子：</span><span>" + item.aimTitle + "</span></div>\n" +
+                                    "              </div>\n" +
+                                    "          </div>");
+                            });
+                        }
+                        else if (action == "reply") {
+                            layui.each(result.data, function (index, item) {
+                                var act = '';
+                                if (item.action == 'comment') {
+                                    act = '回复了我的评论：';
+                                }
+                                else {
+                                    act = '回复了我的回复：';
+                                }
+                                lis.push("<div class=\"main-child\">\n" +
+                                    "              <div class=\"child-left\"><img src=" + item.icon + " onclick='detailUser(" + item.userId + ")'></div>\n" +
+                                    "              <div class=\"child-right\">\n" +
+                                    "                  <div class=\"child-right-top\">\n" +
+                                    "                      <p onclick='detailUser(" + item.userId + ")'>" + item.nickName + "</p>\n" +
+                                    "                      <span>" + item.time + "</span>\n" +
+                                    "                  </div>\n" +
+                                    "                  <div class=\"child-right-content\">" + item.content + "</div>\n" +
+                                    "                  <div class=\"child-right-aim\" ><span style=\"color: gray !important;\">" + act + "</span><span>" + item.aimTitle + "</span></div>\n" +
+                                    "              </div>\n" +
+                                    "          </div>");
+                            });
+                        }
+                        else if (action == "admire") {
+                            layui.each(result.data, function (index, item) {
+                                var act = '';
+                                if (item.action == 'comment') {
+                                    act = '点赞了我的评论：';
+                                }
+                                else if (item.action == 'reply') {
+                                    act = '点赞了我的回复：';
+                                }
+                                else {
+                                    act = '点赞了我的帖子：';
+                                }
+                                lis.push("<div class=\"main-child\">\n" +
+                                    "              <div class=\"child-left\"><img src=" + item.icon + " onclick='detailUser(" + item.userId + ")'></div>\n" +
+                                    "              <div class=\"child-right\">\n" +
+                                    "                  <div class=\"child-right-top\">\n" +
+                                    "                      <p onclick='detailUser(" + item.userId + ")'>" + item.nickName + "</p>\n" +
+                                    "                      <span>" + item.time + "</span>\n" +
+                                    "                  </div>\n" +
+                                    "                  <div class=\"child-right-aim\" ><span style=\"color: gray !important;\">" + act + "</span><span>" + item.aimTitle + "</span></div>\n" +
+                                    "              </div>\n" +
+                                    "          </div>");
+                            });
+                        }
+
+
+                        //执行下一页渲染，第二参数为：满足“加载更多”的条件，即后面仍有分页
+                        //pages为Ajax返回的总页数，只有当前页小于总页数的情况下，才会继续出现加载更多
+                        next(lis.join(''), page < result.pages);//next('列表HTML片段', page < res.pages);
+                    });
+                }
+            });
+        });
+    }
+
+
+</script>
+</body>
+</html>

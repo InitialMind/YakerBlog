@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="thymeleaf/common/fragment::head">
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+</head>
+<body>
+<nav th:replace="thymeleaf/common/fragment::top"></nav>
+<nav th:replace="thymeleaf/common/fragment::left"></nav>
+<div class="div-inner" id="div-inner">
+    <div class="div-inner-color">
+        <div class="layui-btn-group demoTable">
+            <!--<button class="layui-btn layui-btn-danger" data-type="getCheckData">删除选择的记录</button>-->
+            <button class="layui-btn layui-btn-warm" data-type="add">添加</button>
+        </div>
+        <table id="demo" lay-filter="test" lay-data="{id: 'idTest'}" class="layui-hide"></table>
+    </div>
+</div>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+<script th:inline="javascript">
+
+    var pageNum = 0;
+    var iframe;
+    layui.use('table', function () {
+        var table = layui.table;
+
+        //第一个实例
+        table.render({
+            id: 'idTest'
+            , elem: '#demo'
+            , height: 600
+            , size: 'lg'
+            , url: '/article/category/data' //数据接口
+            , page: true //开启分页
+            , cols: [
+                [ //表头
+                    // {type:'checkbox',fixed: 'left'},
+                    {field: 'ID', title: 'ID', sort: true, fixed: 'center'},
+                    {field: 'name', title: '帖子类名', sort: true, fixed: 'left'},
+                    {field: 'articles', title: '帖子数量', sort: true, fixed: 'left'}
+                    , {fixed: 'right', width: 150, align: 'center', toolbar: '#barDemo', fixed: 'left'}
+                ]
+            ]
+            , done: function (res, curr, count) {
+                pageNum = curr;
+            }
+        });
+
+        //编辑事件
+        table.on('tool(test)', function (obj) { //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+            var data = obj.data; //获得当前行数据
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            var tr = obj.tr; //获得当前行 tr 的DOM对象
+
+            if (layEvent === 'del') { //删除
+                if (data.articles == 0) {
+                    layer.confirm('真的删除行么', function (index) {
+
+                        $.ajax({
+                            async: false,
+                            cache: false,
+                            type: 'post',
+                            url: "/article/category/del",
+                            data: {
+                                'id': data.ID,
+                            },
+                            success: function (data) {
+                                obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                                layer.close(index);
+                            }
+                        })
+
+
+                    });
+                }
+                else {
+                    layer.msg("该类下有文章不能删除");
+                }
+            } else if (layEvent === 'edit') { //编辑
+                layer.open({
+                    type: 2,
+                    area: ['450px', '300px'],
+                    fixed: false, //不固定
+                    maxmin: true,
+                    shadeClose: true,
+                    skin: 'open',
+                    content: ['/article/category/edit?action=edit&&id=' + data.ID, 'no'],
+                    success: function (layero, index) {
+                        iframe = parent.window[layero.find('iframe')[0]['name']]; //得到iframe页的窗口对象，执行iframe页的方法：iframeWin.method();
+                    },
+                    end: function () {
+                        if (typeof iframe.res != "undefined") {
+
+                            obj.update({
+                                name: iframe.res.categoryName,
+
+                                //同步更新缓存对应的值
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+        var $ = layui.$, active = {
+
+            add: function () { //添加
+                layer.open({
+                    type: 2,
+                    area: ['450px', '300px'],
+                    fixed: false, //不固定
+                    maxmin: true,
+                    shadeClose: true,
+                    skin: 'open',
+                    content: ['/article/category/edit?action=add', 'no'],
+                    success: function (layero, index) {
+                        iframe = parent.window[layero.find('iframe')[0]['name']]; //得到iframe页的窗口对象，执行iframe页的方法：iframeWin.method();
+                    },
+                    end: function () {
+                        if (typeof iframe.res != "undefined") {
+                            table.reload('idTest', {
+                                page: {curr: pageNum}
+                            })
+
+                        }
+
+                    }
+
+                });
+            }
+        };
+        $('.demoTable .layui-btn').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+    });
+
+    function getPageNum() {
+        return pageNum;
+    }
+
+</script>
+</body>
+</html>
